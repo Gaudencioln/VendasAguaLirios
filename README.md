@@ -1,60 +1,85 @@
 # 💧 Água Lírios - Fonte de Confiança
 
-## PWA de Gestão de Entregas de Água - Versão 10.0
+## PWA de Gestão de Entregas de Água - Versão 11.0
 
 Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios para distribuidoras de água mineral.
 
 ---
 
-## 🎉 Novidades da Versão 10.0
+## 🎉 Novidades da Versão 11.0
 
-### 🐛 Bugs Críticos Corrigidos
+### 1. ✨ Botão de Instalação em Configurações
 
-**1. Exclusão Funcionando Perfeitamente**
-- Corrigida função `confirmar()` que impedia exclusões
-- Agora clientes, cidades, produtos e usuários são removidos corretamente
-- Items desaparecem da lista imediatamente após confirmação
+**Facilita a instalação do PWA sem precisar procurar nas opções do navegador!**
 
-**2. Operacional Acessa Clientes**
-- Operacional agora vê tile "Clientes" no home
-- Operacional agora vê botão "Clientes" na barra inferior
-- Operacional pode ver, criar, editar, excluir e desativar clientes
+- Novo botão "📥 Instalar App no Dispositivo" em Configurações
+- Visível apenas para Admin
+- Detecta automaticamente se o app já está instalado
+- Mostra "✅ App já instalado" quando apropriado
+- Mantém botão do header funcionando também
 
-### ✨ Novas Funcionalidades
+**Como usar:**
+1. Admin acessa Configurações
+2. Localiza seção "📱 Instalação do App"
+3. Clica em "Instalar App no Dispositivo"
+4. Aceita o prompt de instalação
+5. App instalado!
 
-**3. Impressão de Clientes (3 Botões)**
+---
 
-**Botão "Imprimir Lista":**
-- Imprime lista de clientes filtrada por cidade
-- Formato: tabela com Nome, Telefone, Documento, Cidade, Endereço, Status
-- Marca clientes inativos visualmente
-- Permissão: Admin e Operacional
+### 2. 💾 Backup Completo para Operacional
 
-**Botão "🖨️ (5)":**
-- Imprime ficha individual do cliente
-- Inclui dados cadastrais completos
-- Mostra últimos 5 pedidos com detalhes
-- Permissão: Admin e Operacional
+**Operacional agora pode fazer backup e restore completo do sistema!**
 
-**Botão "🖨️ (todos)":**
-- Imprime ficha individual do cliente
-- Inclui dados cadastrais completos
-- Mostra TODOS os pedidos do cliente
-- Permissão: Admin e Operacional
+**Antes (v10.0):**
+- Admin: Backup completo + Restore completo
+- Operacional: Apenas exportar dados próprios
+- Vendedor: Apenas exportar dados próprios
 
-**4. Gerenciamento Completo de Usuários**
+**Agora (v11.0):**
+- Admin: Backup completo + Restore completo ✅
+- **Operacional: Backup completo + Restore completo** ✅ **NOVO!**
+- Vendedor: Apenas exportar dados próprios (sem mudanças)
 
-**Botão "Editar":**
-- Permite alterar nome do usuário
-- Permite redefinir senha
-- Perfil não pode ser alterado
-- Validação de nomes duplicados
-- Se não digitar nova senha, mantém a antiga
+**Acesso:**
+- Operacional agora vê tile "⚙️ Configurações" no home
+- Operacional agora vê botão "Config." na barra inferior
+- Operacional vê APENAS a seção de Backup (não vê Cidades, Produtos, Usuários, Instalação)
 
-**Botão "Excluir":**
-- Remove usuário permanentemente
-- Confirmação obrigatória
-- Proteção: não permite excluir admin principal
+**Uso recomendado:**
+- Operacional faz backup diário no servidor
+- Admin faz backup semanal para segurança
+- Vendedor exporta seus dados quando necessário
+
+---
+
+### 3. 📍 Campos de Ponto de Referência e Observação
+
+**Novos campos para facilitar as entregas!**
+
+**Dois novos campos no cadastro de clientes:**
+- **Ponto de Referência:** Para localização (ex: "Próximo ao mercado X")
+- **Observação:** Para informações importantes (ex: "Portão azul, cachorro bravo")
+
+**Onde aparecem:**
+- ✅ Formulário de cadastro de clientes
+- ✅ Lista de clientes (abaixo do endereço, com cores)
+- ✅ Impressão de lista de clientes (duas colunas na tabela)
+- ✅ Impressão individual de cliente (na ficha)
+- ✅ **Relatório de entregas** (tela, exportar HTML, imprimir) - **FOCO PRINCIPAL!**
+
+**Cores na tela:**
+- **Ref:** Azul (#0ea5e9)
+- **Obs:** Laranja (#f59e0b)
+
+**Exemplo de uso:**
+```
+Cliente: João Silva
+Telefone: (11) 98765-4321
+Endereço: Rua das Flores, 123
+Ref: Próximo ao mercado X
+Obs: Portão azul, cachorro bravo
+```
 
 ---
 
@@ -65,6 +90,7 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 - **Funciona offline** após primeira instalação
 - **Rápido e responsivo** com interface otimizada
 - **Sem necessidade de app store** - instala direto do navegador
+- **Botão de instalação facilitado** em Configurações (v11.0)
 
 ### 👥 Sistema Multi-Usuário
 - **3 perfis de acesso**: Admin, Vendedor, Operacional
@@ -75,11 +101,12 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 
 **Gestão de Clientes:**
 - Cadastro com nome, telefone, documento, cidade, endereço
+- **NOVO v11.0:** Ponto de referência e observação
 - Edição de clientes (admin e operacional)
 - Sistema inteligente de exclusão/desativação
 - Filtro por cidade
 - Importar/Exportar CSV
-- **NOVO:** Impressão de lista e fichas individuais
+- Impressão de lista e fichas individuais
 
 **Gestão de Pedidos:**
 - Filtrar por cidade
@@ -90,17 +117,13 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 **Relatórios:**
 - Romaneio de carregamento
 - Relatório de entregas com valores
+- **NOVO v11.0:** Ponto de referência e observação nas entregas
 - Impressão completa
 
-**Configurações (Admin):**
-- Gerenciar cidades, produtos, preços
-- **NOVO:** Editar usuários (nome e senha)
-- **NOVO:** Excluir usuários
-- Backup/Restore completo
-
-**Meus Dados (Vendedor/Operacional):**
-- Exportar dados próprios
-- Importar atualizações do admin
+**Configurações:**
+- **Admin:** Gerenciar cidades, produtos, preços, usuários, backup, **instalação**
+- **Operacional:** Backup e restore completo (v11.0)
+- **Vendedor:** Exportar/importar dados próprios
 
 ---
 
@@ -125,7 +148,7 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
    - `sw.js`
    - `agua-lirios-azul.png`
    - `agua-lirios-azul-Copia.png`
-3. Adicione uma mensagem: "Versão 10.0 do PWA"
+3. Adicione uma mensagem: "Versão 11.0 do PWA"
 4. Clique em **"Commit changes"**
 
 ### Passo 3: Ativar GitHub Pages
@@ -168,24 +191,33 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 
 ## 📱 Como Instalar no Celular/Desktop
 
-### Android (Chrome/Edge)
+### Método 1: Botão em Configurações (v11.0 - Recomendado)
 
+**Para Admin:**
+1. Faça login como admin
+2. Menu > Configurações
+3. Seção "📱 Instalação do App"
+4. Clique em "Instalar App no Dispositivo"
+5. Aceite o prompt de instalação
+6. Pronto!
+
+### Método 2: Opções do Navegador
+
+**Android (Chrome/Edge):**
 1. Abra o PWA no navegador
 2. Toque no menu (⋮)
 3. Selecione **"Instalar aplicativo"**
 4. Confirme a instalação
 5. O ícone aparecerá na tela inicial
 
-### iOS (Safari)
-
+**iOS (Safari):**
 1. Abra o PWA no Safari
 2. Toque no botão **Compartilhar** (□↑)
 3. Role e toque em **"Adicionar à Tela de Início"**
 4. Confirme o nome e toque em **"Adicionar"**
 5. O ícone aparecerá na tela inicial
 
-### Desktop (Chrome/Edge)
-
+**Desktop (Chrome/Edge):**
 1. Abra o PWA no navegador
 2. Clique no ícone de instalação (⊕) na barra de endereço
 3. Ou vá em Menu > **"Instalar Água Lírios..."**
@@ -198,12 +230,15 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 
 ### Para Administradores
 
+**Instalar o App:**
+- Menu > Configurações > Instalação do App
+- Clicar em "Instalar App no Dispositivo"
+
 **Gerenciar Clientes:**
 - Menu > Clientes
+- Preencher: Nome, Telefone, Documento, Cidade, Endereço, **Ponto de Referência**, **Observação**
 - Editar: Botão "Editar" ao lado do cliente
-- Excluir (sem pedidos): Botão "Excluir" (vermelho)
-- Desativar (com pedidos): Botão "Desativar" (amarelo)
-- Reativar: Botão "Reativar" (verde)
+- Excluir/Desativar: Botões apropriados conforme situação
 
 **Imprimir Clientes:**
 - **Lista:** Filtrar por cidade e clicar em "Imprimir Lista"
@@ -219,11 +254,33 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 - Menu > Configurações > Backup e Restauração
 - Clicar em "Fazer Backup Completo"
 
+### Para Operacional (v11.0)
+
+**Fazer Backup:**
+- Menu > Configurações (agora visível!)
+- Clicar em "📥 Fazer Backup Completo"
+- Salvar arquivo no servidor
+
+**Restaurar Backup:**
+- Menu > Configurações
+- Clicar em "📤 Restaurar Backup"
+- Selecionar arquivo
+- Confirmar
+
+**Gerenciar Clientes:**
+- Mesmo processo do admin
+- Pode editar, excluir, desativar, imprimir
+
+**Relatório de Entregas:**
+- Menu > Entregas
+- Verificar que **Ponto de Referência** e **Observação** aparecem
+- Facilita muito as entregas!
+
 ### Para Vendedores
 
 **Cadastrar Clientes:**
 - Menu > Clientes
-- Preencher formulário
+- Preencher formulário completo (incluindo **Ponto de Referência** e **Observação**)
 - Clicar em "Adicionar"
 
 **Criar Pedidos:**
@@ -237,127 +294,36 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 - Menu > Meus Dados
 - Clicar em "Exportar Meus Clientes e Pedidos"
 
-### Para Operacional
-
-**Editar Clientes:**
-- Menu > Clientes
-- Clicar em "Editar" ao lado do cliente
-- Fazer alterações
-- Clicar em "Adicionar"
-
-**Desativar Clientes:**
-- Menu > Clientes
-- Clicar em "Desativar" (se tiver pedidos)
-- Ou "Excluir" (se não tiver pedidos)
-
-**Imprimir Clientes:**
-- Mesmo processo do admin
-
-**Romaneio e Entregas:**
-- Menu > Romaneio ou Entregas
-- Selecionar data
-- Preencher motorista e placa
-- Clicar em "Atualizar"
-- Clicar em "Imprimir"
-
----
-
-## 🛠️ Funcionalidades Detalhadas
-
-### Gestão de Clientes (v10.0)
-
-**Edição:**
-- Botão "Editar" ao lado de cada cliente
-- Disponível para admin e operacional
-- Dados carregados automaticamente no formulário
-- Salvar clicando em "Adicionar"
-
-**Exclusão/Desativação Inteligente:**
-
-**Cliente SEM pedidos:**
-- Botão **"Excluir"** (vermelho)
-- Remove permanentemente do banco
-- Confirmação obrigatória
-
-**Cliente COM pedidos:**
-- Botão **"Desativar"** (amarelo)
-- Marca como inativo
-- Mantém histórico de pedidos
-- Não aparece mais na seleção de novos pedidos
-
-**Cliente INATIVO:**
-- Aparece com 🚫 e badge "INATIVO"
-- Nome riscado e em cinza
-- Botão **"Reativar"** (verde)
-- Pode ser reativado a qualquer momento
-
-**Impressão (NOVO v10.0):**
-
-**Imprimir Lista:**
-- Respeita filtro de cidade
-- Tabela com todos os dados cadastrais
-- Clientes inativos marcados visualmente
-- Abre janela de impressão automaticamente
-
-**Imprimir Individual (5):**
-- Ficha do cliente com dados completos
-- Últimos 5 pedidos com detalhes
-- Cada pedido mostra: data, vendedor, itens, total
-
-**Imprimir Individual (todos):**
-- Igual ao anterior, mas com TODOS os pedidos
-- Útil para clientes com histórico longo
-
-### Gerenciamento de Usuários (NOVO v10.0)
-
-**Editar Usuário:**
-- Botão "Editar" ao lado de cada usuário
-- Modal com formulário:
-  - Nome do Usuário (editável)
-  - Nova Senha (editável, opcional)
-  - Perfil (só visualização)
-- Validações:
-  - Nome não pode estar vazio
-  - Não permite nomes duplicados
-  - Se não digitar senha, mantém a antiga
-- Ao salvar:
-  - Se mudou nome: remove antigo e cria novo
-  - Se manteve nome: apenas atualiza
-
-**Excluir Usuário:**
-- Botão "Excluir" ao lado de cada usuário
-- Confirmação obrigatória
-- Remove permanentemente do banco
-- Proteção: não permite excluir admin principal
-
 ---
 
 ## 📝 Changelog
 
+### v11.0 - Instalação Facilitada, Backup para Operacional e Novos Campos (11/11/2025)
+
+✅ **Adicionado** botão de instalação em Configurações (admin)  
+✅ **Adicionado** backup completo para operacional  
+✅ **Adicionado** restore completo para operacional  
+✅ **Adicionado** tile e botão de Configurações para operacional  
+✅ **Adicionado** campo "Ponto de Referência" no cadastro de clientes  
+✅ **Adicionado** campo "Observação" no cadastro de clientes  
+✅ **Implementado** exibição dos novos campos em lista, impressão e relatórios  
+✅ **Otimizado** relatório de entregas com informações para facilitar entregas  
+
 ### v10.0 - Bugs Corrigidos e Novas Funcionalidades (11/11/2025)
 
-✅ **Corrigido** bug crítico de exclusão (clientes, cidades, produtos, usuários)  
-✅ **Corrigido** acesso do operacional à tela de Clientes  
-✅ **Adicionado** botão "Imprimir Lista" de clientes  
-✅ **Adicionado** botão "Imprimir (5)" individual  
-✅ **Adicionado** botão "Imprimir (todos)" individual  
-✅ **Adicionado** edição de usuários (nome e senha)  
-✅ **Adicionado** exclusão de usuários com confirmação  
-✅ **Protegido** admin principal contra edição/exclusão  
+✅ Corrigido bug crítico de exclusão  
+✅ Corrigido acesso do operacional à tela de Clientes  
+✅ Adicionado impressão de lista de clientes  
+✅ Adicionado impressão individual (5 e todos)  
+✅ Adicionado edição de usuários  
+✅ Adicionado exclusão de usuários  
 
 ### v9.0 - Ajustes Finais (11/11/2025)
 
 ✅ Removido seed automático de vendedor/operacional  
-✅ Adicionado botão de editar clientes (admin/operacional)  
+✅ Adicionado botão de editar clientes  
 ✅ Implementado sistema inteligente de exclusão/desativação  
 ✅ Adicionada indicação visual de clientes inativos  
-✅ Implementado filtro de clientes ativos em pedidos  
-
-### v8.0 - Bugs Críticos Corrigidos (10/11/2025)
-
-✅ Corrigida função de deleção no IndexedDB  
-✅ Adicionados usuários de teste vendedor/operacional  
-✅ Implementado histórico de pedidos do cliente  
 
 ---
 
@@ -407,6 +373,27 @@ Após fazer alterações no código:
 
 ---
 
+## 💡 Dicas de Uso
+
+### Ponto de Referência e Observação
+
+**Exemplos de Ponto de Referência:**
+- "Próximo ao mercado X"
+- "Ao lado da farmácia Y"
+- "Esquina com a Rua Z"
+- "Em frente à igreja"
+
+**Exemplos de Observação:**
+- "Portão azul, cachorro bravo"
+- "Campainha não funciona, bater palmas"
+- "Cliente prefere receber pela manhã"
+- "Deixar com vizinho se não estiver"
+- "Entrada pelos fundos"
+
+**Dica:** Use esses campos para facilitar as entregas! O entregador verá essas informações no relatório de entregas.
+
+---
+
 ## 📞 Contato e Suporte
 
 **Água Lírios - Fonte de Confiança**
@@ -429,16 +416,16 @@ Sistema desenvolvido com dedicação para otimizar a gestão de entregas e melho
 **Desenvolvido por:** Manus AI Agent  
 **Cliente:** Gaudêncio  
 **Data:** Novembro 2025  
-**Versão:** 10.0 - Bugs Corrigidos e Novas Funcionalidades
+**Versão:** 11.0 - Instalação Facilitada, Backup para Operacional e Novos Campos
 
 ---
 
 ## 📚 Documentação Adicional
 
 Para informações técnicas detalhadas, consulte:
-- `TESTES_V10.md` - Relatório completo de testes e correções
+- `TESTES_V11.md` - Relatório completo de testes e implementações
 
 ---
 
-**🚀 Versão 10.0 - Totalmente Funcional! Boa sorte com suas entregas! 💧**
+**🚀 Versão 11.0 - Facilitando Instalação e Entregas! Boa sorte! 💧**
 

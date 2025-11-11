@@ -61,6 +61,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
       <div class="tile" data-roles="admin|operacional" onclick="go('entregas')"><b>🚚 Entregas</b><span>Por cliente, com valores e totais.</span></div>
       <div class="tile" data-roles="vendedor|operacional" onclick="go('meusdados')"><b>📊 Meus Dados</b><span>Exportar e importar dados pessoais.</span></div>
       <div class="tile" data-roles="admin" onclick="go('config')"><b>⚙️ Configurações</b><span>Cidades, Produtos, Preços, Motoristas, Usuários.</span></div>
+      <div class="tile" data-roles="operacional" onclick="go('config')"><b>⚙️ Configurações</b><span>Backup e restauração de dados.</span></div>
     </div>
     <p class="hint" id="whoami">Usuário: —</p>
   </section>
@@ -80,6 +81,12 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
         </div>
         <div class="sec">
           <input id="cliEndereco" placeholder="Endereço">
+        </div>
+        <div class="sec">
+          <input id="cliPontoReferencia" placeholder="Ponto de Referência (ex: Próximo ao mercado X)">
+        </div>
+        <div class="sec">
+          <textarea id="cliObservacao" placeholder="Observação (ex: Portão azul, cachorro bravo)" rows="3" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;resize:vertical"></textarea>
         </div>
         <div class="sec"><button class="btn" onclick="addCliente()">Adicionar</button></div>
       </div>
@@ -197,7 +204,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
 
 
       <!-- Backup e Restauração -->
-      <div class="card">
+      <div class="card" data-roles="admin|operacional">
         <h3>💾 Backup e Restauração</h3>
         <div class="cta">
           <button class="btn success" onclick="fazerBackupCompleto()">📥 Fazer Backup Completo</button>
@@ -207,7 +214,16 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
         <div class="hint">Backup inclui todos os dados: clientes, produtos, preços, usuários e pedidos. Use para migrar entre dispositivos ou recuperar dados.</div>
       </div>
 
-      <div class="card">
+      <!-- Instalação do App (apenas admin) -->
+      <div class="card" data-roles="admin">
+        <h3>📱 Instalação do App</h3>
+        <div id="installSection">
+          <button class="btn" id="btnInstallConfig" onclick="instalarApp()">📥 Instalar App no Dispositivo</button>
+          <div class="hint">Instale o app para acesso rápido sem precisar abrir o navegador.</div>
+        </div>
+      </div>
+
+      <div class="card" data-roles="admin">
         <h3>Cidades</h3>
         <div class="cta">
           <input id="novaCidade" placeholder="Nome da cidade">
@@ -216,7 +232,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
         <div class="list" id="listaCidades"></div>
       </div>
 
-      <div class="card">
+      <div class="card" data-roles="admin">
         <h3>Produtos & Preços</h3>
         <div class="two">
           <input id="prodSKU" placeholder="SKU (ex.: PET500)">
@@ -238,7 +254,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
         <div class="list" id="listaProdutos"></div>
       </div>
 
-      <div class="card">
+      <div class="card" data-roles="admin">
         <h3>Usuários (somente admin)</h3>
         <div class="two">
           <input id="usrNome" placeholder="Usuário (ex.: joao)">
@@ -289,11 +305,55 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
   <button data-roles="admin|operacional" onclick="go('romaneio')"><div class="ico">📦</div>Romaneio</button>
   <button data-roles="admin|operacional" onclick="go('entregas')"><div class="ico">🚚</div>Entregas</button>
   <button data-roles="vendedor|operacional" onclick="go('meusdados')"><div class="ico">📊</div>Dados</button>
-  <button data-roles="admin" onclick="go('config')"><div class="ico">⚙️</div>Config.</button>
+  <button data-roles="admin|operacional" onclick="go('config')"><div class="ico">⚙️</div>Config.</button>
 </nav>
 
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));}
+
+// PWA Installation
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btnHeader = document.getElementById('btnInstall');
+  if(btnHeader) btnHeader.hidden = false;
+  updateInstallButton();
+});
+
+function updateInstallButton(){
+  const btnConfig = document.getElementById('btnInstallConfig');
+  const installSection = document.getElementById('installSection');
+  if(!btnConfig || !installSection) return;
+  
+  if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true){
+    // App já instalado
+    installSection.innerHTML = '<div class="hint" style="color:#059669;font-weight:600">✅ App já instalado neste dispositivo</div>';
+  } else if(deferredPrompt){
+    // Pode instalar
+    btnConfig.style.display = 'inline-block';
+  } else {
+    // Não pode instalar (navegador não suporta ou já instalado)
+    installSection.innerHTML = '<div class="hint" style="color:#64748b">Instalação não disponível neste navegador. Tente usar Chrome, Edge ou Safari.</div>';
+  }
+}
+
+async function instalarApp(){
+  if(!deferredPrompt){
+    showToast('Instalação não disponível. Use Chrome, Edge ou Safari.','warn');
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if(outcome === 'accepted'){
+    showToast('App instalado com sucesso!','success');
+  }
+  deferredPrompt = null;
+  updateInstallButton();
+}
+
+// Botão de instalação no header
+document.getElementById('btnInstall')?.addEventListener('click', instalarApp);
 
 // Toast notifications
 function showToast(message, type = 'success') {
@@ -346,7 +406,7 @@ function go(id){
   if(id==='romaneio'){ requireRole(['admin','operacional']); setDefaultDate('dataRomaneio'); calcRomaneio(); }
   if(id==='entregas'){ requireRole(['admin','operacional']); setDefaultDate('dataEntregas'); calcEntregas(); }
   if(id==='meusdados'){ requireRole(['vendedor','operacional']); }
-  if(id==='config'){ requireRole(['admin']); renderConfig(); renderUsuarios(); }
+  if(id==='config'){ requireRole(['admin','operacional']); renderConfig(); renderUsuarios(); updateInstallButton(); }
   if(id==='home'){ updateRoleVisibility(); }
 }
 
@@ -684,9 +744,11 @@ async function addCliente(){
   const doc=document.getElementById('cliDocumento').value.trim();
   const cid=parseInt(document.getElementById('cliCidade').value||'0',10);
   const end=document.getElementById('cliEndereco').value.trim();
+  const pontoRef=document.getElementById('cliPontoReferencia').value.trim();
+  const obs=document.getElementById('cliObservacao').value.trim();
   if(!nome || !tel || !cid){ showToast('Informe nome, telefone e cidade.', 'warn'); return; }
-  await dbAdd(S_CLIENTES,{nome,telefone:tel,documento:doc,cidadeId:cid,endereco:end});
-  document.getElementById('cliNome').value=''; document.getElementById('cliTelefone').value=''; document.getElementById('cliDocumento').value=''; document.getElementById('cliEndereco').value='';
+  await dbAdd(S_CLIENTES,{nome,telefone:tel,documento:doc,cidadeId:cid,endereco:end,pontoReferencia:pontoRef,observacao:obs});
+  document.getElementById('cliNome').value=''; document.getElementById('cliTelefone').value=''; document.getElementById('cliDocumento').value=''; document.getElementById('cliEndereco').value=''; document.getElementById('cliPontoReferencia').value=''; document.getElementById('cliObservacao').value='';
   showToast('Cliente adicionado com sucesso!');
   renderClientes();
 }
@@ -698,6 +760,8 @@ async function editarCliente(id){
   document.getElementById('cliDocumento').value=cliente.documento||'';
   document.getElementById('cliCidade').value=cliente.cidadeId||'';
   document.getElementById('cliEndereco').value=cliente.endereco||'';
+  document.getElementById('cliPontoReferencia').value=cliente.pontoReferencia||'';
+  document.getElementById('cliObservacao').value=cliente.observacao||'';
   // Remover cliente antigo e permitir salvar como novo
   await dbDel(S_CLIENTES,id);
   showToast('Cliente carregado para edição. Faça as alterações e clique em Adicionar.');
@@ -774,6 +838,8 @@ async function imprimirListaClientes(){
             <th>Documento</th>
             <th>Cidade</th>
             <th>Endereço</th>
+            <th>Ponto Ref.</th>
+            <th>Observação</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -791,6 +857,8 @@ async function imprimirListaClientes(){
         <td>${c.documento||''}</td>
         <td>${cidadeMap[c.cidadeId]||''}</td>
         <td>${c.endereco||''}</td>
+        <td>${c.pontoReferencia||'—'}</td>
+        <td>${c.observacao||'—'}</td>
         <td>${status}</td>
       </tr>
     `;
@@ -851,6 +919,8 @@ async function imprimirCliente(id, limite){
         <p><strong>Documento:</strong> ${cliente.documento||''}</p>
         <p><strong>Cidade:</strong> ${cidadeMap[cliente.cidadeId]||''}</p>
         <p><strong>Endereço:</strong> ${cliente.endereco||''}</p>
+        ${cliente.pontoReferencia?`<p><strong>Ponto de Referência:</strong> ${cliente.pontoReferencia}</p>`:''}
+        ${cliente.observacao?`<p><strong>Observação:</strong> ${cliente.observacao}</p>`:''}
         <p><strong>Status:</strong> ${cliente.ativo===false?'INATIVO':'ATIVO'}</p>
       </div>
       <h2>${tituloLimite} (${pedidosImprimir.length})</h2>
@@ -1036,9 +1106,17 @@ async function renderClientes(){
       botoes+=`<button class="btn small ghost" onclick="imprimirCliente(${c.id}, 5)">🖨️ (5)</button>`;
       botoes+=`<button class="btn small ghost" onclick="imprimirCliente(${c.id}, 0)">🖨️ (todos)</button>`;
     }
+    // Formatar ponto de referência e observação
+    let detalhesAdicionais='';
+    if(c.pontoReferencia){
+      detalhesAdicionais+=`<div class="hint" style="color:#0ea5e9"><b>Ref:</b> ${c.pontoReferencia}</div>`;
+    }
+    if(c.observacao){
+      detalhesAdicionais+=`<div class="hint" style="color:#f59e0b"><b>Obs:</b> ${c.observacao}</div>`;
+    }
     return `
       <div class="row">
-        <div><b ${nomeStyle}>${c.nome}${statusText}</b><div class="hint">${c.telefone} • ${cidadeMap[c.cidadeId]||'—'}</div><div class="hint">${c.endereco||''}</div></div>
+        <div><b ${nomeStyle}>${c.nome}${statusText}</b><div class="hint">${c.telefone} • ${cidadeMap[c.cidadeId]||'—'}</div><div class="hint">${c.endereco||''}</div>${detalhesAdicionais}</div>
         <div style="display:flex;gap:6px">${botoes}</div>
       </div>
     `;
@@ -1316,6 +1394,8 @@ function exportarHTML_Entregas(){
   for(const [cid,obj] of Object.entries(r.porCliente)){
     html += `<h2>${obj.cliente.nome} — R$ ${obj.total.toFixed(2)}</h2>`;
     html += `<div>${obj.cliente.cidade||''} • ${obj.cliente.telefone||''} • ${obj.cliente.endereco||''}</div>`;
+    if(obj.cliente.pontoReferencia) html += `<div><b>Ponto de Referência:</b> ${obj.cliente.pontoReferencia}</div>`;
+    if(obj.cliente.observacao) html += `<div><b>Observação:</b> ${obj.cliente.observacao}</div>`;
     html += `<table border="1" cellspacing="0" cellpadding="6"><thead><tr><th>SKU</th><th>Nome</th><th>Qtd</th><th>Total</th></tr></thead><tbody>`;
     for(const [sku,a] of Object.entries(obj.agregado)){
       html += `<tr><td>${sku}</td><td>${a.nome}</td><td>${a.qtd}</td><td>R$ ${a.total.toFixed(2)}</td></tr>`;
@@ -1334,6 +1414,8 @@ function imprimirEntregas(){
   for(const [cid,obj] of Object.entries(r.porCliente)){
     html += `<h2>${obj.cliente.nome} — R$ ${obj.total.toFixed(2)}</h2>`;
     html += `<div>${obj.cliente.cidade||''} • ${obj.cliente.telefone||''} • ${obj.cliente.endereco||''}</div>`;
+    if(obj.cliente.pontoReferencia) html += `<div><b>Ponto de Referência:</b> ${obj.cliente.pontoReferencia}</div>`;
+    if(obj.cliente.observacao) html += `<div><b>Observação:</b> ${obj.cliente.observacao}</div>`;
     html += `<table><thead><tr><th>SKU</th><th>Nome</th><th>Qtd</th><th>Total</th></tr></thead><tbody>`;
     for(const [sku,a] of Object.entries(obj.agregado)){
       html += `<tr><td>${sku}</td><td>${a.nome}</td><td>${a.qtd}</td><td>R$ ${a.total.toFixed(2)}</td></tr>`;

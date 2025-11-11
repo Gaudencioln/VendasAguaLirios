@@ -55,7 +55,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
   <!-- HOME -->
   <section id="home" class="screen active">
     <div class="grid">
-      <div class="tile" data-roles="admin|vendedor" onclick="go('clientes')"><b>👥 Clientes</b><span>Cadastro (nome, telefone, cidade, endereço).</span></div>
+      <div class="tile" data-roles="admin|vendedor|operacional" onclick="go('clientes')"><b>👥 Clientes</b><span>Cadastro (nome, telefone, cidade, endereço).</span></div>
       <div class="tile" data-roles="admin|vendedor" onclick="go('pedidos')"><b>🧾 Pedidos</b><span>Filtrar por cidade e lançar itens.</span></div>
       <div class="tile" data-roles="admin|operacional" onclick="go('romaneio')"><b>📦 Romaneio</b><span>Somente quantidades para carregar o caminhão.</span></div>
       <div class="tile" data-roles="admin|operacional" onclick="go('entregas')"><b>🚚 Entregas</b><span>Por cliente, com valores e totais.</span></div>
@@ -94,6 +94,9 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
             <button class="btn small" onclick="document.getElementById('csvImport').click()">📥 Importar CSV</button>
             <button class="btn small ghost" onclick="exportarClientesCSV()">📤 Exportar CSV</button>
           </div>
+        </div>
+        <div class="sec" data-roles="admin|operacional">
+          <button class="btn ghost" onclick="imprimirListaClientes()">🖨️ Imprimir Lista</button>
         </div>
       </div>
       <div class="list" id="listaClientes"></div>
@@ -281,7 +284,7 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
 
 <nav class="tabbar">
   <button onclick="go('home')"><div class="ico">🏠</div>Home</button>
-  <button data-roles="admin|vendedor" onclick="go('clientes')"><div class="ico">👥</div>Clientes</button>
+  <button data-roles="admin|vendedor|operacional" onclick="go('clientes')"><div class="ico">👥</div>Clientes</button>
   <button data-roles="admin|vendedor" onclick="go('pedidos')"><div class="ico">🧾</div>Pedidos</button>
   <button data-roles="admin|operacional" onclick="go('romaneio')"><div class="ico">📦</div>Romaneio</button>
   <button data-roles="admin|operacional" onclick="go('entregas')"><div class="ico">🚚</div>Entregas</button>
@@ -315,12 +318,22 @@ function confirmar(message, callback) {
       <h3>Confirmação</h3>
       <p>${message}</p>
       <div class="btn-group">
-        <button class="btn ghost" onclick="this.closest('.modal').remove()">Cancelar</button>
-        <button class="btn danger" onclick="this.closest('.modal').remove(); (${callback})()">Confirmar</button>
+        <button class="btn ghost" id="btnCancelar">Cancelar</button>
+        <button class="btn danger" id="btnConfirmar">Confirmar</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+  
+  // Adicionar event listeners corretamente
+  document.getElementById('btnCancelar').onclick = () => {
+    modal.remove();
+  };
+  
+  document.getElementById('btnConfirmar').onclick = async () => {
+    modal.remove();
+    if (callback) await callback();
+  };
 }
 
 // Router
@@ -328,7 +341,7 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   localStorage.setItem('lastScreen', id);
-  if(id==='clientes'){ requireRole(['admin','vendedor']); refreshCidadesSelect('cliCidade'); renderClientes(); }
+  if(id==='clientes'){ requireRole(['admin','vendedor','operacional']); refreshCidadesSelect('cliCidade'); renderClientes(); }
   if(id==='pedidos'){ requireRole(['admin','vendedor']); refreshCidadePedidos(); refreshProdutosUI(); renderItensTemp(); mostrarHistoricoPedidos(); }
   if(id==='romaneio'){ requireRole(['admin','operacional']); setDefaultDate('dataRomaneio'); calcRomaneio(); }
   if(id==='entregas'){ requireRole(['admin','operacional']); setDefaultDate('dataEntregas'); calcEntregas(); }
@@ -590,13 +603,77 @@ async function addUsuario(){
   showToast('Usuário adicionado com sucesso!');
   renderUsuarios();
 }
-async function delUsuario(u){
-  if(u==='adm'){ showToast('Não é possível remover o admin principal.', 'error'); return; }
-  confirmar('Tem certeza que deseja remover este usuário?', async function() {
-    await dbDel(S_USERS, u);
-    showToast('Usuário removido com sucesso!');
+async function editarUsuario(username){
+  const usuario=await dbGet(S_USERS,username);
+  if(!usuario){showToast('Usuário não encontrado.','error');return;}
+  
+  // Criar modal de edição
+  const modal=document.createElement('div');
+  modal.className='modal';
+  modal.innerHTML=`
+    <div class="modal-content">
+      <h3>Editar Usuário</h3>
+      <div style="margin:16px 0">
+        <label style="display:block;margin-bottom:8px">Nome do Usuário:</label>
+        <input id="editUserName" value="${usuario.user}" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px">
+      </div>
+      <div style="margin:16px 0">
+        <label style="display:block;margin-bottom:8px">Nova Senha:</label>
+        <input id="editUserPass" type="password" placeholder="Digite a nova senha" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px">
+      </div>
+      <div style="margin:16px 0">
+        <label style="display:block;margin-bottom:8px">Perfil:</label>
+        <input value="${usuario.role}" disabled style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;color:#64748b">
+      </div>
+      <div class="btn-group">
+        <button class="btn ghost" id="btnCancelarEdit">Cancelar</button>
+        <button class="btn" id="btnSalvarEdit">Salvar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  document.getElementById('btnCancelarEdit').onclick=()=>modal.remove();
+  document.getElementById('btnSalvarEdit').onclick=async()=>{
+    const novoNome=document.getElementById('editUserName').value.trim();
+    const novaSenha=document.getElementById('editUserPass').value.trim();
+    
+    if(!novoNome){showToast('Nome do usuário não pode estar vazio.','warn');return;}
+    
+    // Se mudou o nome, verificar se já existe
+    if(novoNome!==username){
+      const existe=await dbGet(S_USERS,novoNome);
+      if(existe){showToast('Já existe um usuário com este nome.','warn');return;}
+      // Remover usuário antigo
+      await dbDel(S_USERS,username);
+    }
+    
+    // Atualizar dados
+    const usuarioAtualizado={
+      user:novoNome,
+      pass:novaSenha?btoa(novaSenha):usuario.pass, // Se não digitou nova senha, mantém a antiga
+      role:usuario.role
+    };
+    
+    await dbPut(S_USERS,usuarioAtualizado);
+    modal.remove();
+    showToast('Usuário atualizado com sucesso!');
+    renderUsuarios();
+  };
+}
+
+async function excluirUsuario(username){
+  if(username==='adm'){showToast('Não é possível excluir o admin principal.','error');return;}
+  confirmar('Tem certeza que deseja EXCLUIR permanentemente este usuário?', async function() {
+    await dbDel(S_USERS, username);
+    showToast('Usuário excluído com sucesso!');
     renderUsuarios();
   });
+}
+
+// Manter função antiga para compatibilidade
+async function delUsuario(u){
+  await excluirUsuario(u);
 }
 
 // Clientes
@@ -653,6 +730,182 @@ async function reativarCliente(id){
   await dbPut(S_CLIENTES,cliente);
   showToast('Cliente reativado com sucesso!');
   renderClientes();
+}
+
+// Impressão de Clientes
+async function imprimirListaClientes(){
+  const clientes=await dbAll(S_CLIENTES);
+  const cidades=await dbAll(S_CIDADES);
+  const cidadeMap=Object.fromEntries(cidades.map(c=>[c.id,c.nome]));
+  const filtro=document.getElementById('filtroCidade').value.toLowerCase();
+  const filtrados=clientes.filter(c=>!filtro||cidadeMap[c.cidadeId]?.toLowerCase().includes(filtro));
+  
+  if(filtrados.length===0){
+    showToast('Nenhum cliente para imprimir.','warn');
+    return;
+  }
+  
+  const titulo=filtro?`Clientes - ${filtro}`:'Água Lírios - Lista de Clientes';
+  
+  let html=`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${titulo}</title>
+      <style>
+        body{font-family:Arial,sans-serif;margin:20px;}
+        h1{text-align:center;color:#1e3a8a;}
+        table{width:100%;border-collapse:collapse;margin-top:20px;}
+        th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+        th{background:#1e3a8a;color:white;}
+        tr:nth-child(even){background:#f2f2f2;}
+        .inativo{color:#94a3b8;text-decoration:line-through;}
+      </style>
+    </head>
+    <body>
+      <h1>${titulo}</h1>
+      <p>Total de clientes: ${filtrados.length}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Documento</th>
+            <th>Cidade</th>
+            <th>Endereço</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  filtrados.forEach(c=>{
+    const inativo=c.ativo===false;
+    const nomeClass=inativo?'class="inativo"':'';
+    const status=inativo?'INATIVO':'ATIVO';
+    html+=`
+      <tr>
+        <td ${nomeClass}>${c.nome||''}</td>
+        <td>${c.telefone||''}</td>
+        <td>${c.documento||''}</td>
+        <td>${cidadeMap[c.cidadeId]||''}</td>
+        <td>${c.endereco||''}</td>
+        <td>${status}</td>
+      </tr>
+    `;
+  });
+  
+  html+=`
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+  
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+
+async function imprimirCliente(id, limite){
+  const cliente=await dbGet(S_CLIENTES,id);
+  if(!cliente){showToast('Cliente não encontrado.','error');return;}
+  
+  const cidades=await dbAll(S_CIDADES);
+  const cidadeMap=Object.fromEntries(cidades.map(c=>[c.id,c.nome]));
+  const pedidos=await dbAll(S_PEDIDOS);
+  const pedidosCliente=pedidos
+    .filter(p=>p.clienteId===id)
+    .sort((a,b)=>b.createdAt-a.createdAt);
+  
+  const pedidosImprimir=limite>0?pedidosCliente.slice(0,limite):pedidosCliente;
+  const tituloLimite=limite>0?`Últimos ${limite} Pedidos`:'Todos os Pedidos';
+  
+  let html=`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Ficha do Cliente - ${cliente.nome}</title>
+      <style>
+        body{font-family:Arial,sans-serif;margin:20px;}
+        h1{text-align:center;color:#1e3a8a;}
+        h2{color:#1e3a8a;margin-top:30px;}
+        .info{margin:20px 0;}
+        .info p{margin:5px 0;}
+        table{width:100%;border-collapse:collapse;margin-top:10px;}
+        th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+        th{background:#1e3a8a;color:white;}
+        tr:nth-child(even){background:#f2f2f2;}
+        .pedido{margin-bottom:30px;}
+        .total{font-weight:bold;text-align:right;}
+      </style>
+    </head>
+    <body>
+      <h1>Água Lírios - Ficha do Cliente</h1>
+      <div class="info">
+        <p><strong>Nome:</strong> ${cliente.nome||''}</p>
+        <p><strong>Telefone:</strong> ${cliente.telefone||''}</p>
+        <p><strong>Documento:</strong> ${cliente.documento||''}</p>
+        <p><strong>Cidade:</strong> ${cidadeMap[cliente.cidadeId]||''}</p>
+        <p><strong>Endereço:</strong> ${cliente.endereco||''}</p>
+        <p><strong>Status:</strong> ${cliente.ativo===false?'INATIVO':'ATIVO'}</p>
+      </div>
+      <h2>${tituloLimite} (${pedidosImprimir.length})</h2>
+  `;
+  
+  if(pedidosImprimir.length===0){
+    html+=`<p>Nenhum pedido encontrado.</p>`;
+  }else{
+    pedidosImprimir.forEach((pedido,idx)=>{
+      const data=new Date(pedido.createdAt).toLocaleDateString('pt-BR');
+      html+=`
+        <div class="pedido">
+          <h3>Pedido ${idx+1} - ${data}</h3>
+          <p><strong>Vendedor:</strong> ${pedido.user||''}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Preço Unit.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      pedido.itens.forEach(item=>{
+        html+=`
+          <tr>
+            <td>${item.nome||''}</td>
+            <td>${item.qtd||0}</td>
+            <td>R$ ${(item.preco||0).toFixed(2)}</td>
+            <td>R$ ${((item.preco||0)*(item.qtd||0)).toFixed(2)}</td>
+          </tr>
+        `;
+      });
+      
+      html+=`
+            </tbody>
+          </table>
+          <p class="total">Total do Pedido: R$ ${(pedido.total||0).toFixed(2)}</p>
+        </div>
+      `;
+    });
+  }
+  
+  html+=`
+    </body>
+    </html>
+  `;
+  
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  win.print();
 }
 
 // Importação CSV
@@ -779,6 +1032,9 @@ async function renderClientes(){
       }else{
         botoes+=`<button class="btn small danger" onclick="excluirCliente(${c.id})">Excluir</button>`;
       }
+      // Botões de impressão individual
+      botoes+=`<button class="btn small ghost" onclick="imprimirCliente(${c.id}, 5)">🖨️ (5)</button>`;
+      botoes+=`<button class="btn small ghost" onclick="imprimirCliente(${c.id}, 0)">🖨️ (todos)</button>`;
     }
     return `
       <div class="row">
@@ -819,12 +1075,25 @@ async function renderConfig(){
 
 async function renderUsuarios(){
   const usuarios=await dbAll(S_USERS);
-  document.getElementById('listaUsuarios').innerHTML=usuarios.map(u=>`
-    <div class="row">
-      <div><b>${u.user}</b> <span class="badge">${u.role}</span></div>
-      ${u.user!=='adm'?`<button class="btn small danger" onclick="delUsuario('${u.user}')">Remover</button>`:'<span class="hint">Admin principal</span>'}
-    </div>
-  `).join('') || '<div class="row"><span>Nenhum usuário cadastrado.</span></div>';
+  document.getElementById('listaUsuarios').innerHTML=usuarios.map(u=>{
+    let botoes='';
+    if(u.user!=='adm'){
+      botoes=`
+        <div style="display:flex;gap:6px">
+          <button class="btn small ghost" onclick="editarUsuario('${u.user}')">Editar</button>
+          <button class="btn small danger" onclick="excluirUsuario('${u.user}')">Excluir</button>
+        </div>
+      `;
+    }else{
+      botoes='<span class="hint">Admin principal</span>';
+    }
+    return `
+      <div class="row">
+        <div><b>${u.user}</b> <span class="badge">${u.role}</span></div>
+        ${botoes}
+      </div>
+    `;
+  }).join('') || '<div class="row"><span>Nenhum usuário cadastrado.</span></div>';
 }
 
 // Pedidos

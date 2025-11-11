@@ -1,0 +1,32 @@
+{
+  "name": "Água Lírios - Fonte de Confiança",
+  "short_name": "Água Lírios",
+  "description": "PWA de vendas com login e perfis (admin, vendedor, operacional).",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait",
+  "scope": ".",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "agua-lirios-azul.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "agua-lirios-azul.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "agua-lirios-azul-Copia.png",
+      "sizes": "552x352",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

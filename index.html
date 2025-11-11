@@ -1,0 +1,1135 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Água Lírios - Vendedor</title><meta name="theme-color" content="#1e3a8a">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="agua-lirios-azul.png">
+<style>
+:root{--azul:#1e3a8a;--azul2:#1f4bd8;--bg:#f6f7fb;--txt:#0f172a;--success:#059669;--warn:#d97706;--error:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:var(--txt)}
+header{position:sticky;top:0;background:linear-gradient(180deg,var(--azul),var(--azul2));color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
+header img{width:28px;height:28px;border-radius:6px}header h1{font-size:18px;margin:0;font-weight:700}
+main{padding:12px 12px 90px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#fff;border-radius:14px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);min-height:90px}
+.tile b{font-size:14px}.tile span{font-size:12px;color:#475569}
+.cta{display:flex;gap:10px}.btn{background:var(--azul);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--azul2)}.btn.small{padding:6px 10px;border-radius:10px;font-size:12px}.ghost{background:#fff;color:var(--azul);border:1px solid #1e40af}
+.btn.danger{background:var(--error)}.btn.success{background:var(--success)}
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;display:flex;justify-content:space-around;padding:10px 6px;z-index:50}
+nav.tabbar button{background:none;border:none;display:flex;flex-direction:column;align-items:center;font-size:11px;color:#0f172a;cursor:pointer}
+nav.tabbar .ico{font-size:22px;line-height:22px}.screen{display:none}.screen.active{display:block}
+.list{background:#fff;border-radius:12px;overflow:hidden}.row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #eef2f7}
+.row:last-child{border-bottom:0}.row b{font-size:14px}.hint{font-size:12px;color:#64748b;margin-top:8px}
+input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:#e6ecff;border-radius:999px;font-size:12px}
+.sec{margin-top:10px}.cards{display:flex;flex-direction:column;gap:8px}.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.right{margin-left:auto}.nowrap{white-space:nowrap}.tot{font-weight:800;font-size:16px}.install{margin-left:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:60vh}
+.badge{font-size:11px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px}
+.link{color:#1e3a8a;cursor:pointer;text-decoration:underline;font-size:12px}
+.toast{position:fixed;top:20px;right:20px;background:#059669;color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1000;transform:translateX(100%);transition:transform 0.3s ease}
+.toast.show{transform:translateX(0)}.toast.error{background:var(--error)}.toast.warn{background:var(--warn)}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:2000}
+.modal-content{background:#fff;border-radius:12px;padding:20px;max-width:400px;width:90%;margin:20px}
+.modal h3{margin:0 0 16px 0}.modal .btn-group{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+</style></head><body>
+<header>
+  <img src="agua-lirios-azul.png" alt="Logo"><h1>Água Lírios — Vendas</h1>
+  <button id="btnInstall" class="btn install" hidden>Instalar</button>
+  <button id="btnLogout" class="btn danger" onclick="doLogout()" style="display:none;">🚪 Sair</button>
+</header>
+
+<main>
+  <!-- LOGIN -->
+  <section id="login" class="screen">
+    <div class="center">
+      <h2>Entrar</h2>
+      <div class="card" style="min-width:280px;max-width:420px;width:100%">
+        <div class="two">
+          <input id="loginUser" placeholder="Usuário (ex.: adm)">
+          <input id="loginPass" placeholder="Senha" type="password">
+        </div>
+        <div class="sec"><button class="btn" onclick="doLogin()">Acessar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <div class="grid">
+      <div class="tile" data-roles="admin|vendedor" onclick="go('clientes')"><b>👥 Clientes</b><span>Cadastro (nome, telefone, cidade, endereço).</span></div>
+      <div class="tile" data-roles="admin|vendedor" onclick="go('pedidos')"><b>🧾 Pedidos</b><span>Filtrar por cidade e lançar itens.</span></div>
+      <div class="tile" data-roles="admin|operacional" onclick="go('romaneio')"><b>📦 Romaneio</b><span>Somente quantidades para carregar o caminhão.</span></div>
+      <div class="tile" data-roles="admin|operacional" onclick="go('entregas')"><b>🚚 Entregas</b><span>Por cliente, com valores e totais.</span></div>
+      <div class="tile" data-roles="vendedor|operacional" onclick="go('meusdados')"><b>📊 Meus Dados</b><span>Exportar e importar dados pessoais.</span></div>
+      <div class="tile" data-roles="admin" onclick="go('config')"><b>⚙️ Configurações</b><span>Cidades, Produtos, Preços, Motoristas, Usuários.</span></div>
+    </div>
+    <p class="hint" id="whoami">Usuário: —</p>
+  </section>
+
+  <!-- CLIENTES -->
+  <section id="clientes" class="screen">
+    <h2>Clientes</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="two">
+          <input id="cliNome" placeholder="Nome do cliente">
+          <input id="cliTelefone" placeholder="Telefone">
+        </div>
+        <div class="two sec">
+          <input id="cliDocumento" placeholder="Documento (CPF/CNPJ)">
+          <select id="cliCidade"></select>
+        </div>
+        <div class="sec">
+          <input id="cliEndereco" placeholder="Endereço">
+        </div>
+        <div class="sec"><button class="btn" onclick="addCliente()">Adicionar</button></div>
+      </div>
+      <div class="card">
+        <div class="cta">
+          <input id="filtroCidade" placeholder="Filtrar por cidade" oninput="renderClientes()">
+          <button class="btn small ghost" onclick="document.getElementById('filtroCidade').value='';renderClientes();">Limpar</button>
+        </div>
+        <div class="sec">
+          <div class="cta">
+            <input type="file" id="csvImport" accept=".csv" style="display:none" onchange="importarCSV()">
+            <button class="btn small" onclick="document.getElementById('csvImport').click()">📥 Importar CSV</button>
+            <button class="btn small ghost" onclick="exportarClientesCSV()">📤 Exportar CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="list" id="listaClientes"></div>
+    </div>
+  </section>
+
+  <!-- PEDIDOS -->
+  <section id="pedidos" class="screen">
+    <h2>Pedidos</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="two">
+          <select id="selCidadePedidos"></select>
+          <button class="btn small" onclick="refreshCidadePedidos()">↻</button>
+        </div>
+        <div class="hint">
+          <span class="badge">Dica</span> Você pode <span class="link" onclick="definirCidadeDoDia()">salvar essa cidade como padrão de hoje</span>.
+          <span id="cidadePadraoInfo" class="hint"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cta">
+          <select id="selCliente" style="flex:1" onchange="mostrarHistoricoPedidos()"></select>
+          <button class="btn small" onclick="refreshClientesSelect()">↻</button>
+        </div>
+        <div id="historicoPedidos" class="sec" style="display:none;">
+          <h4>Últimos Pedidos do Cliente:</h4>
+          <div id="listaHistorico"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="two">
+          <select id="selSKU" style="flex:1"></select>
+          <select id="selPreco" style="flex:1"></select>
+        </div>
+        <div class="cta sec">
+          <input id="qtd" type="number" value="1" min="1" style="width:90px">
+          <button class="btn" onclick="addItem()">Adicionar</button>
+        </div>
+        <div id="itensPedido" class="sec"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="pill">Total: <span id="totalPedido" class="tot right">R$ 0,00</span></span>
+          <button class="btn right" onclick="salvarPedido()">Salvar pedido</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROMANEIO -->
+  <section id="romaneio" class="screen">
+    <h2>Romaneio</h2>
+    <div class="card">
+      <div class="two">
+        <input id="dataRomaneio" type="date">
+        <input id="romMotorista" placeholder="Motorista">
+      </div>
+      <div class="two sec">
+        <input id="romPlaca" placeholder="Placa">
+        <button class="btn" onclick="calcRomaneio()">Atualizar</button>
+      </div>
+      <div class="sec">
+        <button class="btn ghost" onclick="imprimirRomaneio()">Imprimir</button>
+        <button class="btn ghost" onclick="exportarCSV_R()">Exportar CSV</button>
+        <button class="btn ghost" onclick="exportarHTML_R()">Exportar HTML</button>
+      </div>
+      <div id="romResumo" class="sec"></div>
+      <div class="hint">Usado para carregar o caminhão (sem valores).</div>
+    </div>
+  </section>
+
+  <!-- ENTREGAS -->
+  <section id="entregas" class="screen">
+    <h2>Entregas</h2>
+    <div class="card">
+      <div class="two">
+        <input id="dataEntregas" type="date">
+        <input id="entMotorista" placeholder="Motorista">
+      </div>
+      <div class="two sec">
+        <input id="entPlaca" placeholder="Placa">
+        <button class="btn" onclick="calcEntregas()">Atualizar</button>
+      </div>
+      <div class="sec">
+        <button class="btn ghost" onclick="imprimirEntregas()">Imprimir</button>
+        <button class="btn ghost" onclick="exportarHTML_Entregas()">Exportar HTML</button>
+      </div>
+      <div id="entregasLista" class="sec"></div>
+      <div class="hint">Lista para o motorista: o que entregar e quanto receber de cada cliente.</div>
+    </div>
+  </section>
+
+  <!-- CONFIGURAÇÕES -->
+  <section id="config" class="screen">
+    <h2>Configurações</h2>
+    <div class="cards">
+
+
+      <!-- Backup e Restauração -->
+      <div class="card">
+        <h3>💾 Backup e Restauração</h3>
+        <div class="cta">
+          <button class="btn success" onclick="fazerBackupCompleto()">📥 Fazer Backup Completo</button>
+          <input type="file" id="backupFile" accept=".json" style="display:none" onchange="restaurarBackup()">
+          <button class="btn" onclick="document.getElementById('backupFile').click()">📤 Restaurar Backup</button>
+        </div>
+        <div class="hint">Backup inclui todos os dados: clientes, produtos, preços, usuários e pedidos. Use para migrar entre dispositivos ou recuperar dados.</div>
+      </div>
+
+      <div class="card">
+        <h3>Cidades</h3>
+        <div class="cta">
+          <input id="novaCidade" placeholder="Nome da cidade">
+          <button class="btn" onclick="addCidade()">Adicionar</button>
+        </div>
+        <div class="list" id="listaCidades"></div>
+      </div>
+
+      <div class="card">
+        <h3>Produtos & Preços</h3>
+        <div class="two">
+          <input id="prodSKU" placeholder="SKU (ex.: PET500)">
+          <input id="prodNome" placeholder="Nome (ex.: Garrafa 500 mL)">
+        </div>
+        <div class="cta sec">
+          <button class="btn" onclick="addProduto()">Adicionar produto</button>
+        </div>
+        <div class="sec">
+          <div class="two">
+            <select id="precoSKU"></select>
+            <input id="precoRotulo" placeholder="Rótulo do preço (ex.: Base, Promo, Marco)">
+          </div>
+          <div class="cta sec">
+            <input id="precoValor" type="number" step="0.01" placeholder="Valor (R$)">
+            <button class="btn" onclick="addPreco()">Adicionar preço</button>
+          </div>
+        </div>
+        <div class="list" id="listaProdutos"></div>
+      </div>
+
+      <div class="card">
+        <h3>Usuários (somente admin)</h3>
+        <div class="two">
+          <input id="usrNome" placeholder="Usuário (ex.: joao)">
+          <select id="usrPerfil">
+            <option value="vendedor">vendedor</option>
+            <option value="operacional">operacional</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <div class="cta sec">
+          <input id="usrSenha" placeholder="Senha" type="password">
+          <button class="btn" onclick="addUsuario()">Adicionar usuário</button>
+        </div>
+        <div class="list" id="listaUsuarios"></div>
+>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEUS DADOS (Vendedor/Operacional) -->
+  <section id="meusdados" class="screen">
+    <h2>Meus Dados</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>📤 Exportar Meus Dados</h3>
+        <div class="cta">
+          <button class="btn success" onclick="exportarMeusDados()">📥 Exportar Meus Clientes e Pedidos</button>
+        </div>
+        <div class="hint">Exporta apenas os clientes e pedidos que você cadastrou.</div>
+      </div>
+      
+      <div class="card">
+        <h3>📥 Importar Atualizações</h3>
+        <div class="cta">
+          <input type="file" id="atualizacaoFile" accept=".json" style="display:none" onchange="importarAtualizacoes()">
+          <button class="btn" onclick="document.getElementById('atualizacaoFile').click()">📂 Selecionar Arquivo de Atualização</button>
+        </div>
+        <div class="hint">Importa atualizações de produtos, preços e clientes enviadas pelo administrador.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button onclick="go('home')"><div class="ico">🏠</div>Home</button>
+  <button data-roles="admin|vendedor" onclick="go('clientes')"><div class="ico">👥</div>Clientes</button>
+  <button data-roles="admin|vendedor" onclick="go('pedidos')"><div class="ico">🧾</div>Pedidos</button>
+  <button data-roles="admin|operacional" onclick="go('romaneio')"><div class="ico">📦</div>Romaneio</button>
+  <button data-roles="admin|operacional" onclick="go('entregas')"><div class="ico">🚚</div>Entregas</button>
+  <button data-roles="vendedor|operacional" onclick="go('meusdados')"><div class="ico">📊</div>Dados</button>
+  <button data-roles="admin" onclick="go('config')"><div class="ico">⚙️</div>Config.</button>
+</nav>
+
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));}
+
+// Toast notifications
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 100);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, 3000);
+}
+
+// Confirmation dialog
+function confirmar(message, callback) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>Confirmação</h3>
+      <p>${message}</p>
+      <div class="btn-group">
+        <button class="btn ghost" onclick="this.closest('.modal').remove()">Cancelar</button>
+        <button class="btn danger" onclick="this.closest('.modal').remove(); (${callback})()">Confirmar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// Router
+function go(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  localStorage.setItem('lastScreen', id);
+  if(id==='clientes'){ requireRole(['admin','vendedor']); refreshCidadesSelect('cliCidade'); renderClientes(); }
+  if(id==='pedidos'){ requireRole(['admin','vendedor']); refreshCidadePedidos(); refreshProdutosUI(); renderItensTemp(); mostrarHistoricoPedidos(); }
+  if(id==='romaneio'){ requireRole(['admin','operacional']); setDefaultDate('dataRomaneio'); calcRomaneio(); }
+  if(id==='entregas'){ requireRole(['admin','operacional']); setDefaultDate('dataEntregas'); calcEntregas(); }
+  if(id==='meusdados'){ requireRole(['vendedor','operacional']); }
+  if(id==='config'){ requireRole(['admin']); renderConfig(); renderUsuarios(); }
+  if(id==='home'){ updateRoleVisibility(); }
+}
+
+// DB
+const DB_NAME='agua-lirios-db', DB_VERSION=7;
+const S_CLIENTES='clientes',S_PEDIDOS='pedidos',S_CIDADES='cidades',S_MOTOR='motoristas',S_PROD='produtos',S_USERS='users';
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=e=>{const db=e.target.result;
+  if(!db.objectStoreNames.contains(S_CLIENTES))db.createObjectStore(S_CLIENTES,{keyPath:'id',autoIncrement:true});
+  if(!db.objectStoreNames.contains(S_PEDIDOS))db.createObjectStore(S_PEDIDOS,{keyPath:'id',autoIncrement:true});
+  if(!db.objectStoreNames.contains(S_CIDADES))db.createObjectStore(S_CIDADES,{keyPath:'id',autoIncrement:true});
+  if(!db.objectStoreNames.contains(S_MOTOR))db.createObjectStore(S_MOTOR,{keyPath:'id',autoIncrement:true});
+  if(!db.objectStoreNames.contains(S_PROD))db.createObjectStore(S_PROD,{keyPath:'sku'});
+  if(!db.objectStoreNames.contains(S_USERS))db.createObjectStore(S_USERS,{keyPath:'user'});
+};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function dbAdd(s,v){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readwrite');tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);tx.objectStore(s).add(v);});}
+async function dbPut(s,v){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readwrite');tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);tx.objectStore(s).put(v);});}
+async function dbDel(s,k){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(s,'readwrite');
+    const store=tx.objectStore(s);
+    const req=store.delete(k);
+    tx.oncomplete=()=>res(true);
+    tx.onerror=()=>rej(tx.error);
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function dbAll(s){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error);});}
+async function dbGet(s,k){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).get(k);rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>rej(rq.error);});}
+
+// Seed admin e usuários de teste
+(async()=>{
+  const admin=await dbGet(S_USERS,'adm');
+  if(!admin){ await dbPut(S_USERS,{user:'adm',pass:btoa('975321'),role:'admin'}); }
+  // Criar usuários de teste se não existirem
+  const vendedor=await dbGet(S_USERS,'vendedor');
+  if(!vendedor){ await dbPut(S_USERS,{user:'vendedor',pass:btoa('123456'),role:'vendedor'}); }
+  const operacional=await dbGet(S_USERS,'operacional');
+  if(!operacional){ await dbPut(S_USERS,{user:'operacional',pass:btoa('123456'),role:'operacional'}); }
+  const session=JSON.parse(localStorage.getItem('session')||'null');
+  if(!session){ showLogin(); } else { updateRoleVisibility(); }
+})();
+
+// Login/roles
+function showLogin(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('login').classList.add('active'); }
+async function doLogin(){
+  const u=(document.getElementById('loginUser').value||'').trim();
+  const p=(document.getElementById('loginPass').value||'').trim();
+  const reg=await dbGet(S_USERS,u);
+  if(!reg){ showToast('Usuário não encontrado.', 'error'); return; }
+  if(btoa(p)!==reg.pass){ showToast('Senha incorreta.', 'error'); return; }
+  localStorage.setItem('session',JSON.stringify({user:u,role:reg.role}));
+  showToast('Login realizado com sucesso!');
+  document.getElementById('btnLogout').style.display = 'block';
+  go('home');
+}
+function logout(){ localStorage.removeItem('session'); showLogin(); }
+function doLogout(){ 
+  confirmar('Tem certeza que deseja sair?', function() {
+    localStorage.removeItem('session'); 
+    document.getElementById('btnLogout').style.display = 'none';
+    showLogin(); 
+    showToast('Logout realizado com sucesso!');
+  });
+}
+function role(){ const s=JSON.parse(localStorage.getItem('session')||'null'); return s?s.role:null; }
+function user(){ const s=JSON.parse(localStorage.getItem('session')||'null'); return s?s.user:null; }
+function requireRole(roles){ const r=role(); if(!r||!roles.includes(r)){ showToast('Acesso negado.', 'error'); go('home'); } }
+function updateRoleVisibility(){
+  const r=role(), u=user()||'—';
+  document.getElementById('whoami').textContent='Usuário: '+u+' ('+(r||'sem perfil')+')';
+  // Controlar visibilidade do botão logout
+  document.getElementById('btnLogout').style.display = r ? 'block' : 'none';
+  // Gating via data-roles
+  document.querySelectorAll('[data-roles]').forEach(el=>{
+    const roles = (el.getAttribute('data-roles')||'').split('|');
+    el.style.display = (!r || roles.indexOf(r)===-1) ? 'none' : '';
+  });
+}
+
+// Util data
+function setDefaultDate(id){
+  const inp=document.getElementById(id);
+  if(!inp.value){
+    const now=new Date(), y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+    inp.value = `${y}-${m}-${d}`;
+  }
+}
+
+// Backup e Restauração
+async function fazerBackupCompleto() {
+  try {
+    const backup = {
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+      data: {
+        clientes: await dbAll(S_CLIENTES),
+        pedidos: await dbAll(S_PEDIDOS),
+        cidades: await dbAll(S_CIDADES),
+        produtos: await dbAll(S_PROD),
+        users: await dbAll(S_USERS)
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agua-lirios-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Backup criado com sucesso!');
+  } catch (error) {
+    showToast('Erro ao criar backup: ' + error.message, 'error');
+  }
+}
+
+async function restaurarBackup() {
+  const file = document.getElementById('backupFile').files[0];
+  if (!file) return;
+  
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text);
+    
+    if (!backup.data) {
+      showToast('Arquivo de backup inválido.', 'error');
+      return;
+    }
+    
+    confirmar('Isso irá substituir TODOS os dados atuais. Tem certeza?', async function() {
+      try {
+        // Limpar dados existentes
+        const db = await openDB();
+        const stores = [S_CLIENTES, S_PEDIDOS, S_CIDADES, S_PROD, S_USERS];
+        
+        for (const store of stores) {
+          const tx = db.transaction(store, 'readwrite');
+          tx.objectStore(store).clear();
+        }
+        
+        // Restaurar dados do backup
+        if (backup.data.clientes) {
+          for (const item of backup.data.clientes) {
+            await dbAdd(S_CLIENTES, item);
+          }
+        }
+        
+        if (backup.data.pedidos) {
+          for (const item of backup.data.pedidos) {
+            await dbAdd(S_PEDIDOS, item);
+          }
+        }
+        
+        if (backup.data.cidades) {
+          for (const item of backup.data.cidades) {
+            await dbAdd(S_CIDADES, item);
+          }
+        }
+        
+        if (backup.data.produtos) {
+          for (const item of backup.data.produtos) {
+            await dbPut(S_PROD, item);
+          }
+        }
+        
+        if (backup.data.users) {
+          for (const item of backup.data.users) {
+            await dbPut(S_USERS, item);
+          }
+        }
+        
+        showToast('Backup restaurado com sucesso! Recarregando...');
+        setTimeout(() => location.reload(), 2000);
+      } catch (error) {
+        showToast('Erro ao restaurar backup: ' + error.message, 'error');
+      }
+    });
+  } catch (error) {
+    showToast('Erro ao ler arquivo de backup: ' + error.message, 'error');
+  }
+  
+  document.getElementById('backupFile').value = '';
+}
+
+// Cidades
+async function addCidade(){
+  const nome=document.getElementById('novaCidade').value.trim();
+  if(!nome){ showToast('Informe o nome da cidade.', 'warn'); return; }
+  await dbAdd(S_CIDADES,{nome});
+  document.getElementById('novaCidade').value='';
+  showToast('Cidade adicionada com sucesso!');
+  renderConfig(); refreshCidadesSelect('cliCidade'); refreshCidadePedidos();
+}
+async function delCidade(id){
+  confirmar('Tem certeza que deseja remover esta cidade?', async function() {
+    await dbDel(S_CIDADES, id);
+    showToast('Cidade removida com sucesso!');
+    renderConfig(); refreshCidadesSelect('cliCidade'); refreshCidadePedidos();
+  });
+}
+
+// Produtos & Preços
+async function addProduto(){
+  const sku=document.getElementById('prodSKU').value.trim();
+  const nome=document.getElementById('prodNome').value.trim();
+  if(!sku || !nome){ showToast('Informe SKU e Nome.', 'warn'); return; }
+  const exists = await dbGet(S_PROD, sku);
+  if(exists){ showToast('SKU já existe.', 'warn'); return; }
+  await dbPut(S_PROD,{sku,nome,precos:[]});
+  document.getElementById('prodSKU').value=''; document.getElementById('prodNome').value='';
+  showToast('Produto adicionado com sucesso!');
+  renderConfig(); refreshProdutosUI();
+}
+async function addPreco(){
+  const sku=document.getElementById('precoSKU').value;
+  const rot=document.getElementById('precoRotulo').value.trim();
+  const val=parseFloat(document.getElementById('precoValor').value||'0');
+  if(!sku || !rot || !val){ showToast('Selecione produto, informe rótulo e valor.', 'warn'); return; }
+  const p=await dbGet(S_PROD, sku);
+  if(!p){ showToast('Produto não encontrado.', 'error'); return; }
+  p.precos = p.precos || [];
+  p.precos.push({rotulo:rot,valor:val});
+  await dbPut(S_PROD,p);
+  document.getElementById('precoRotulo').value=''; document.getElementById('precoValor').value='';
+  showToast('Preço adicionado com sucesso!');
+  renderConfig(); refreshProdutosUI();
+}
+async function delPreco(sku, idx){
+  confirmar('Tem certeza que deseja remover este preço?', async function() {
+    const p=await dbGet(S_PROD, sku);
+    if(!p) return;
+    p.precos.splice(idx,1);
+    await dbPut(S_PROD,p);
+    showToast('Preço removido com sucesso!');
+    renderConfig(); refreshProdutosUI();
+  });
+}
+async function delProduto(sku){
+  confirmar('Tem certeza que deseja remover este produto?', async function() {
+    await dbDel(S_PROD, sku);
+    showToast('Produto removido com sucesso!');
+    renderConfig(); refreshProdutosUI();
+  });
+}
+
+// Usuários
+async function addUsuario(){
+  requireRole(['admin']);
+  const u=document.getElementById('usrNome').value.trim();
+  const p=document.getElementById('usrSenha').value.trim();
+  const r=document.getElementById('usrPerfil').value;
+  if(!u || !p){ showToast('Informe usuário e senha.', 'warn'); return; }
+  const exists = await dbGet(S_USERS, u);
+  if(exists){ showToast('Usuário já existe.', 'warn'); return; }
+  await dbPut(S_USERS,{user:u,pass:btoa(p),role:r});
+  document.getElementById('usrNome').value=''; document.getElementById('usrSenha').value='';
+  showToast('Usuário adicionado com sucesso!');
+  renderUsuarios();
+}
+async function delUsuario(u){
+  if(u==='adm'){ showToast('Não é possível remover o admin principal.', 'error'); return; }
+  confirmar('Tem certeza que deseja remover este usuário?', async function() {
+    await dbDel(S_USERS, u);
+    showToast('Usuário removido com sucesso!');
+    renderUsuarios();
+  });
+}
+
+// Clientes
+async function addCliente(){
+  requireRole(['admin','vendedor']);
+  const nome=document.getElementById('cliNome').value.trim();
+  const tel=document.getElementById('cliTelefone').value.trim();
+  const doc=document.getElementById('cliDocumento').value.trim();
+  const cid=parseInt(document.getElementById('cliCidade').value||'0',10);
+  const end=document.getElementById('cliEndereco').value.trim();
+  if(!nome || !tel || !cid){ showToast('Informe nome, telefone e cidade.', 'warn'); return; }
+  await dbAdd(S_CLIENTES,{nome,telefone:tel,documento:doc,cidadeId:cid,endereco:end});
+  document.getElementById('cliNome').value=''; document.getElementById('cliTelefone').value=''; document.getElementById('cliDocumento').value=''; document.getElementById('cliEndereco').value='';
+  showToast('Cliente adicionado com sucesso!');
+  renderClientes();
+}
+async function delCliente(id){
+  confirmar('Tem certeza que deseja remover este cliente?', async function() {
+    await dbDel(S_CLIENTES, id);
+    showToast('Cliente removido com sucesso!');
+    renderClientes();
+  });
+}
+
+// Importação CSV
+async function importarCSV() {
+  const file = document.getElementById('csvImport').files[0];
+  if (!file) return;
+  
+  try {
+    const text = await file.text();
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    if (lines.length < 2) {
+      showToast('Arquivo CSV deve ter pelo menos um cabeçalho e uma linha de dados.', 'error');
+      return;
+    }
+    
+    const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+    let imported = 0;
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim());
+      
+      if (values.length < header.length) continue;
+      
+      const cliente = {};
+      header.forEach((h, idx) => {
+        if (h === 'nome') cliente.nome = values[idx];
+        if (h === 'telefone') cliente.telefone = values[idx];
+        if (h === 'endereco' || h === 'endereço') cliente.endereco = values[idx];
+        if (h === 'cidade') cliente.cidadeNome = values[idx];
+      });
+      
+      if (cliente.nome && cliente.telefone) {
+        // Buscar ou criar cidade
+        let cidadeId = 1;
+        if (cliente.cidadeNome) {
+          const cidades = await dbAll(S_CIDADES);
+          let cidade = cidades.find(c => c.nome.toLowerCase() === cliente.cidadeNome.toLowerCase());
+          if (!cidade) {
+            await dbAdd(S_CIDADES, { nome: cliente.cidadeNome });
+            const novasCidades = await dbAll(S_CIDADES);
+            cidade = novasCidades.find(c => c.nome.toLowerCase() === cliente.cidadeNome.toLowerCase());
+          }
+          cidadeId = cidade.id;
+        }
+        
+        await dbAdd(S_CLIENTES, {
+          nome: cliente.nome,
+          telefone: cliente.telefone,
+          endereco: cliente.endereco || '',
+          cidadeId: cidadeId
+        });
+        imported++;
+      }
+    }
+    
+    showToast(`${imported} clientes importados com sucesso!`);
+    renderClientes();
+    refreshCidadesSelect('cliCidade');
+  } catch (error) {
+    showToast('Erro ao importar CSV: ' + error.message, 'error');
+  }
+  
+  document.getElementById('csvImport').value = '';
+}
+
+// Exportação CSV
+async function exportarClientesCSV() {
+  try {
+    const clientes = await dbAll(S_CLIENTES);
+    const cidades = await dbAll(S_CIDADES);
+    const cidadeMap = Object.fromEntries(cidades.map(c => [c.id, c.nome]));
+    
+    let csv = 'nome,telefone,endereco,cidade\n';
+    
+    clientes.forEach(cliente => {
+      const nome = (cliente.nome || '').replace(/,/g, ';');
+      const telefone = (cliente.telefone || '').replace(/,/g, ';');
+      const endereco = (cliente.endereco || '').replace(/,/g, ';');
+      const cidade = (cidadeMap[cliente.cidadeId] || '').replace(/,/g, ';');
+      
+      csv += `${nome},${telefone},${endereco},${cidade}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clientes-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('CSV exportado com sucesso!');
+  } catch (error) {
+    showToast('Erro ao exportar CSV: ' + error.message, 'error');
+  }
+}
+
+// Render functions
+async function renderClientes(){
+  const clientes=await dbAll(S_CLIENTES);
+  const cidades=await dbAll(S_CIDADES);
+  const cidadeMap=Object.fromEntries(cidades.map(c=>[c.id,c.nome]));
+  const filtro=document.getElementById('filtroCidade').value.toLowerCase();
+  const filtrados=clientes.filter(c=>!filtro||cidadeMap[c.cidadeId]?.toLowerCase().includes(filtro));
+  const lista=document.getElementById('listaClientes');
+  lista.innerHTML=filtrados.map(c=>`
+    <div class="row">
+      <div><b>${c.nome}</b><div class="hint">${c.telefone} • ${cidadeMap[c.cidadeId]||'—'}</div><div class="hint">${c.endereco||''}</div></div>
+      <button class="btn small danger" onclick="delCliente(${c.id})">Remover</button>
+    </div>
+  `).join('') || '<div class="row"><span>Nenhum cliente encontrado.</span></div>';
+}
+
+async function refreshCidadesSelect(selectId){
+  const cidades=await dbAll(S_CIDADES);
+  const sel=document.getElementById(selectId);
+  sel.innerHTML='<option value="">Selecione uma cidade</option>'+cidades.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+}
+
+async function renderConfig(){
+  // Cidades
+  const cidades=await dbAll(S_CIDADES);
+  document.getElementById('listaCidades').innerHTML=cidades.map(c=>`
+    <div class="row"><div><b>${c.nome}</b></div><button class="btn small danger" onclick="delCidade(${c.id})">Remover</button></div>
+  `).join('') || '<div class="row"><span>Nenhuma cidade cadastrada.</span></div>';
+  
+  // Produtos
+  const produtos=await dbAll(S_PROD);
+  document.getElementById('listaProdutos').innerHTML=produtos.map(p=>`
+    <div class="row">
+      <div><b>${p.nome}</b> <span class="badge">${p.sku}</span>
+        ${(p.precos||[]).map((pr,i)=>`<div class="hint">${pr.rotulo}: R$ ${pr.valor.toFixed(2)} <span class="link" onclick="delPreco('${p.sku}',${i})">remover</span></div>`).join('')}
+      </div>
+      <button class="btn small danger" onclick="delProduto('${p.sku}')">Remover</button>
+    </div>
+  `).join('') || '<div class="row"><span>Nenhum produto cadastrado.</span></div>';
+  
+  // Produtos select
+  document.getElementById('precoSKU').innerHTML='<option value="">Selecione um produto</option>'+produtos.map(p=>`<option value="${p.sku}">${p.nome} (${p.sku})</option>`).join('');
+}
+
+async function renderUsuarios(){
+  const usuarios=await dbAll(S_USERS);
+  document.getElementById('listaUsuarios').innerHTML=usuarios.map(u=>`
+    <div class="row">
+      <div><b>${u.user}</b> <span class="badge">${u.role}</span></div>
+      ${u.user!=='adm'?`<button class="btn small danger" onclick="delUsuario('${u.user}')">Remover</button>`:'<span class="hint">Admin principal</span>'}
+    </div>
+  `).join('') || '<div class="row"><span>Nenhum usuário cadastrado.</span></div>';
+}
+
+// Pedidos
+let itensTemp=[];
+async function refreshCidadePedidos(){
+  const cidades=await dbAll(S_CIDADES);
+  const sel=document.getElementById('selCidadePedidos');
+  sel.innerHTML='<option value="">Todas as cidades</option>'+cidades.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  refreshClientesSelect();
+}
+async function refreshClientesSelect(){
+  const cidSel=parseInt(document.getElementById('selCidadePedidos').value||'0',10);
+  const clientes=await dbAll(S_CLIENTES);
+  const filtrados=cidSel?clientes.filter(c=>c.cidadeId===cidSel):clientes;
+  const sel=document.getElementById('selCliente');
+  sel.innerHTML='<option value="">Selecione um cliente</option>'+filtrados.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+}
+async function refreshProdutosUI(){
+  const produtos=await dbAll(S_PROD);
+  const selSKU=document.getElementById('selSKU');
+  selSKU.innerHTML='<option value="">Selecione um produto</option>'+produtos.map(p=>`<option value="${p.sku}">${p.nome} (${p.sku})</option>`).join('');
+  selSKU.onchange=async function(){
+    const sku=this.value;
+    const selPreco=document.getElementById('selPreco');
+    if(!sku){ selPreco.innerHTML='<option value="">Selecione um preço</option>'; return; }
+    const p=await dbGet(S_PROD,sku);
+    if(!p||!p.precos||!p.precos.length){ selPreco.innerHTML='<option value="">Nenhum preço cadastrado</option>'; return; }
+    selPreco.innerHTML='<option value="">Selecione um preço</option>'+p.precos.map(pr=>`<option value="${pr.valor}">${pr.rotulo} - R$ ${pr.valor.toFixed(2)}</option>`).join('');
+  };
+}
+function renderItensTemp(){
+  const total=itensTemp.reduce((a,b)=>a+b.preco*b.qtd,0);
+  document.getElementById('totalPedido').textContent='R$ '+total.toFixed(2);
+  document.getElementById('itensPedido').innerHTML=itensTemp.map((it,i)=>`
+    <div class="row">
+      <div><b>${it.nome}</b> <span class="hint">${it.sku}</span><div class="hint">Qtd: ${it.qtd} × R$ ${it.preco.toFixed(2)} = R$ ${(it.preco*it.qtd).toFixed(2)}</div></div>
+      <button class="btn small danger" onclick="rmItem(${i})">Remover</button>
+    </div>
+  `).join('') || '<div class="hint">Nenhum item adicionado.</div>';
+}
+async function addItem(){
+  requireRole(['admin','vendedor']);
+  const sku=document.getElementById('selSKU').value;
+  const precoSel=parseFloat(document.getElementById('selPreco').value||'0');
+  let qtd=Math.max(1, parseInt(document.getElementById('qtd').value||'1',10));
+  if(!sku || !precoSel){ showToast('Defina produto e preço em Configurações.', 'warn'); return; }
+  const p=await dbGet(S_PROD, sku);
+  if(!p){ showToast('Produto não encontrado.', 'error'); return; }
+  itensTemp.push({sku:p.sku, nome:p.nome, preco:precoSel, qtd});
+  showToast('Item adicionado ao pedido!');
+  renderItensTemp();
+}
+function rmItem(i){ itensTemp.splice(i,1); renderItensTemp(); }
+async function salvarPedido(){
+  requireRole(['admin','vendedor']);
+  const cid=parseInt(document.getElementById('selCliente').value||'0',10);
+  if(!cid){ showToast('Selecione um cliente.', 'warn'); return; }
+  if(!itensTemp.length){ showToast('Adicione ao menos um item.', 'warn'); return; }
+  const pedido={ user:user(), clienteId:cid, itens:itensTemp, total:itensTemp.reduce((a,b)=>a+b.preco*b.qtd,0), createdAt:Date.now() };
+  await dbAdd(S_PEDIDOS, pedido);
+  itensTemp=[]; renderItensTemp();
+  showToast('Pedido salvo com sucesso!');
+  // Atualizar histórico após salvar
+  await mostrarHistoricoPedidos();
+}
+
+async function mostrarHistoricoPedidos(){
+  const clienteId = parseInt(document.getElementById('selCliente').value || '0', 10);
+  const historicoDiv = document.getElementById('historicoPedidos');
+  const listaDiv = document.getElementById('listaHistorico');
+  
+  if (!clienteId) {
+    historicoDiv.style.display = 'none';
+    return;
+  }
+  
+  try {
+    const pedidos = await dbAll(S_PEDIDOS);
+    const pedidosCliente = pedidos
+      .filter(p => p.clienteId === clienteId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 5); // Últimos 5 pedidos
+    
+    if (pedidosCliente.length === 0) {
+      historicoDiv.style.display = 'none';
+      return;
+    }
+    
+    let html = '';
+    pedidosCliente.forEach(pedido => {
+      const data = new Date(pedido.createdAt).toLocaleDateString('pt-BR');
+      const itensHtml = pedido.itens.map(item => 
+        `<div class="hint">${item.nome} - Qtd: ${item.qtd} - R$ ${item.preco.toFixed(2)}</div>`
+      ).join('');
+      
+      html += `
+        <div class="card" style="margin-bottom: 8px; padding: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span><b>Pedido ${data}</b></span>
+            <span class="tot">R$ ${pedido.total.toFixed(2)}</span>
+          </div>
+          ${itensHtml}
+        </div>
+      `;
+    });
+    
+    listaDiv.innerHTML = html;
+    historicoDiv.style.display = 'block';
+  } catch (error) {
+    console.error('Erro ao carregar histórico:', error);
+    historicoDiv.style.display = 'none';
+  }
+}
+
+function definirCidadeDoDia(){
+  const cid=document.getElementById('selCidadePedidos').value;
+  if(!cid){ showToast('Selecione uma cidade primeiro.', 'warn'); return; }
+  localStorage.setItem('cidadePadrao',cid);
+  showToast('Cidade definida como padrão para hoje!');
+}
+
+// Romaneio (quantidades)
+async function calcRomaneio(){
+  requireRole(['admin','operacional']);
+  setDefaultDate('dataRomaneio');
+  const alvo=document.getElementById('dataRomaneio').value;
+  const pedidos=await dbAll(S_PEDIDOS);
+  const [y,m,d]=alvo.split('-').map(n=>parseInt(n,10));
+  const ini=new Date(y,m-1,d,0,0,0).getTime(), fim=new Date(y,m-1,d,23,59,59).getTime();
+  const doDia=pedidos.filter(p=>p.createdAt>=ini && p.createdAt<=fim);
+  const porSKU={};
+  for(const p of doDia){ for(const it of p.itens){ porSKU[it.sku]=porSKU[it.sku]||{nome:it.nome,qtd:0}; porSKU[it.sku].qtd+=it.qtd; } }
+  const wrap=document.getElementById('romResumo');
+  const linhas=Object.entries(porSKU).map(([sku,o])=>`<div class="row"><div><b>${o.nome}</b> <span class="hint">(${sku})</span></div><div class="nowrap">Qtd: ${o.qtd}</div></div>`).join('') || '<div class="row"><span>Nenhum pedido neste dia.</span></div>';
+  wrap.innerHTML = `<div class="list">${linhas}</div>`;
+  window._romaneio = { data: alvo, porSKU, motorista: (document.getElementById('romMotorista').value||''), placa: (document.getElementById('romPlaca').value||'') };
+}
+function exportarCSV_R(){
+  const r=window._romaneio; if(!r){ showToast('Calcule o romaneio primeiro.', 'warn'); return; }
+  let csv='SKU;Nome;Quantidade\n';
+  for(const [sku,o] of Object.entries(r.porSKU)){ csv+=`${sku};${o.nome};${o.qtd}\n`; }
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`romaneio-${r.data}-qtd.csv`; a.click();
+  showToast('CSV do romaneio exportado!');
+}
+function exportarHTML_R(){
+  const r=window._romaneio; if(!r){ showToast('Calcule o romaneio primeiro.', 'warn'); return; }
+  let rows=''; for(const [sku,o] of Object.entries(r.porSKU)){ rows+=`<tr><td>${sku}</td><td>${o.nome}</td><td>${o.qtd}</td></tr>`; }
+  const html = `<!doctype html><meta charset="utf-8">
+    <title>Romaneio ${r.data}</title>
+    <h1>Romaneio — ${r.data}</h1>
+    <div>Motorista: ${r.motorista||''} • Placa: ${r.placa||''}</div>
+    <table border="1" cellspacing="0" cellpadding="6"><thead><tr><th>SKU</th><th>Nome</th><th>Quantidade</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`romaneio-${r.data}-qtd.html`; a.click();
+  showToast('HTML do romaneio exportado!');
+}
+function imprimirRomaneio(){
+  const r=window._romaneio; if(!r){ showToast('Atualize o romaneio primeiro.', 'warn'); return; }
+  let rows=''; for(const [sku,o] of Object.entries(r.porSKU)){ rows+=`<tr><td>${sku}</td><td>${o.nome}</td><td>${o.qtd}</td></tr>`; }
+  const html=`<!doctype html><meta charset="utf-8"><title>Romaneio ${r.data}</title>
+  <style>body{font-family:Arial;padding:16px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ccc;padding:6px;text-align:left}</style>
+  <h1>Romaneio — ${r.data}</h1><div>Motorista: ${r.motorista||''} • Placa: ${r.placa||''}</div>
+  <table><thead><tr><th>SKU</th><th>Nome</th><th>Quantidade</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+}
+
+// Entregas (com cabeçalho)
+async function calcEntregas(){
+  requireRole(['admin','operacional']);
+  setDefaultDate('dataEntregas');
+  const alvo=document.getElementById('dataEntregas').value;
+  const pedidos=await dbAll(S_PEDIDOS);
+  const clientes=await dbAll(S_CLIENTES); const map=Object.fromEntries(clientes.map(c=>[c.id,c]));
+  const [y,m,d]=alvo.split('-').map(n=>parseInt(n,10));
+  const ini=new Date(y,m-1,d,0,0,0).getTime(), fim=new Date(y,m-1,d,23,59,59).getTime();
+  const doDia=pedidos.filter(p=>p.createdAt>=ini && p.createdAt<=fim);
+  const porCliente={};
+  for(const p of doDia){
+    const c=map[p.clienteId]; const key=p.clienteId;
+    if(!porCliente[key]) porCliente[key]={ cliente:c||{nome:'Sem cadastro',cidade:'',telefone:'',endereco:''}, itens:[], total:0 };
+    porCliente[key].itens = porCliente[key].itens.concat(p.itens);
+    porCliente[key].total += p.total;
+  }
+  for(const k of Object.keys(porCliente)){
+    const agg={};
+    for(const it of porCliente[k].itens){
+      if(!agg[it.sku]) agg[it.sku]={nome:it.nome,qtd:0,total:0,preco:it.preco};
+      agg[it.sku].qtd += it.qtd; agg[it.sku].total += it.preco*it.qtd;
+    }
+    porCliente[k].agregado=agg;
+  }
+  const cont=document.getElementById('entregasLista');
+  const blocos=Object.entries(porCliente).map(([cid,obj])=>{
+    const linhas=Object.entries(obj.agregado).map(([sku,a])=>`
+      <div class="row"><div><b>${a.nome}</b> <span class="hint">(${sku})</span></div><div class="nowrap">x${a.qtd} — R$ ${a.total.toFixed(2)}</div></div>
+    `).join('');
+    return `<div class="card">
+      <div class="row">
+        <div>
+          <b>${obj.cliente.nome}</b>
+          <div class="hint">Doc: ${obj.cliente.documento || 'Não informado'}</div>
+          <div class="hint">${obj.cliente.endereco||''}</div>
+          <div class="hint">${obj.cliente.cidade||''} • ${obj.cliente.telefone||''}</div>
+        </div>
+        <div class="tot">R$ ${obj.total.toFixed(2)}</div>
+      </div>
+      <div class="list">${linhas}</div>
+    </div>`;
+  }).join('');
+  cont.innerHTML = blocos || '<div class="row"><span>Nenhum pedido neste dia.</span></div>';
+  window._entregas = { data: alvo, porCliente, motorista:(document.getElementById('entMotorista').value||''), placa:(document.getElementById('entPlaca').value||'') };
+}
+function exportarHTML_Entregas(){
+  const r=window._entregas; if(!r){ showToast('Atualize a lista de entregas primeiro.', 'warn'); return; }
+  let html = `<!doctype html><meta charset="utf-8"><title>Entregas ${r.data}</title><h1>Entregas — ${r.data}</h1>
+  <div>Motorista: ${r.motorista||''} • Placa: ${r.placa||''}</div>`;
+  for(const [cid,obj] of Object.entries(r.porCliente)){
+    html += `<h2>${obj.cliente.nome} — R$ ${obj.total.toFixed(2)}</h2>`;
+    html += `<div>${obj.cliente.cidade||''} • ${obj.cliente.telefone||''} • ${obj.cliente.endereco||''}</div>`;
+    html += `<table border="1" cellspacing="0" cellpadding="6"><thead><tr><th>SKU</th><th>Nome</th><th>Qtd</th><th>Total</th></tr></thead><tbody>`;
+    for(const [sku,a] of Object.entries(obj.agregado)){
+      html += `<tr><td>${sku}</td><td>${a.nome}</td><td>${a.qtd}</td><td>R$ ${a.total.toFixed(2)}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+  const blob=new Blob([html],{type:'text/html;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`entregas-${r.data}.html`; a.click();
+  showToast('HTML das entregas exportado!');
+}
+function imprimirEntregas(){
+  const r=window._entregas; if(!r){ showToast('Atualize a lista de entregas primeiro.', 'warn'); return; }
+  let html = `<!doctype html><meta charset="utf-8"><title>Entregas ${r.data}</title>
+  <style>body{font-family:Arial;padding:16px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ccc;padding:6px;text-align:left} h2{margin-top:18px}</style>
+  <h1>Entregas — ${r.data}</h1><div>Motorista: ${r.motorista||''} • Placa: ${r.placa||''}</div>`;
+  for(const [cid,obj] of Object.entries(r.porCliente)){
+    html += `<h2>${obj.cliente.nome} — R$ ${obj.total.toFixed(2)}</h2>`;
+    html += `<div>${obj.cliente.cidade||''} • ${obj.cliente.telefone||''} • ${obj.cliente.endereco||''}</div>`;
+    html += `<table><thead><tr><th>SKU</th><th>Nome</th><th>Qtd</th><th>Total</th></tr></thead><tbody>`;
+    for(const [sku,a] of Object.entries(obj.agregado)){
+      html += `<tr><td>${sku}</td><td>${a.nome}</td><td>${a.qtd}</td><td>R$ ${a.total.toFixed(2)}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+  const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+}
+
+// Funcionalidades para Vendedor/Operacional
+async function exportarMeusDados() {
+  requireRole(['vendedor', 'operacional']);
+  
+  try {
+    const usuarioAtual = user();
+    const clientes = await dbAll(S_CLIENTES);
+    const pedidos = await dbAll(S_PEDIDOS);
+    
+    // Filtrar apenas os dados do usuário atual
+    const meusClientes = clientes.filter(c => c.user === usuarioAtual);
+    const meusPedidos = pedidos.filter(p => p.user === usuarioAtual);
+    
+    const dados = {
+      usuario: usuarioAtual,
+      dataExportacao: new Date().toISOString(),
+      clientes: meusClientes,
+      pedidos: meusPedidos,
+      totalClientes: meusClientes.length,
+      totalPedidos: meusPedidos.length
+    };
+    
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meus-dados-${usuarioAtual}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast(`Exportados ${meusClientes.length} clientes e ${meusPedidos.length} pedidos!`);
+  } catch (error) {
+    console.error('Erro ao exportar dados:', error);
+    showToast('Erro ao exportar dados.', 'error');
+  }
+}
+
+async function importarAtualizacoes() {
+  requireRole(['vendedor', 'operacional']);
+  
+  const file = document.getElementById('atualizacaoFile').files[0];
+  if (!file) return;
+  
+  try {
+    const text = await file.text();
+    const dados = JSON.parse(text);
+    
+    // Validar estrutura do arquivo
+    if (!dados.produtos && !dados.precos && !dados.clientes && !dados.cidades) {
+      showToast('Arquivo de atualização inválido.', 'error');
+      return;
+    }
+    
+    let atualizacoes = 0;
+    
+    // Atualizar produtos se existirem
+    if (dados.produtos && Array.isArray(dados.produtos)) {
+      for (const produto of dados.produtos) {
+        await dbAdd(S_PRODUTOS, produto);
+        atualizacoes++;
+      }
+    }
+    
+    // Atualizar preços se existirem
+    if (dados.precos && Array.isArray(dados.precos)) {
+      for (const preco of dados.precos) {
+        await dbAdd(S_PRECOS, preco);
+        atualizacoes++;
+      }
+    }
+    
+    // Atualizar cidades se existirem
+    if (dados.cidades && Array.isArray(dados.cidades)) {
+      for (const cidade of dados.cidades) {
+        await dbAdd(S_CIDADES, cidade);
+        atualizacoes++;
+      }
+    }
+    
+    // Atualizar clientes se existirem (apenas adicionar novos, não sobrescrever)
+    if (dados.clientes && Array.isArray(dados.clientes)) {
+      const clientesExistentes = await dbAll(S_CLIENTES);
+      const nomesExistentes = new Set(clientesExistentes.map(c => c.nome.toLowerCase()));
+      
+      for (const cliente of dados.clientes) {
+        if (!nomesExistentes.has(cliente.nome.toLowerCase())) {
+          await dbAdd(S_CLIENTES, cliente);
+          atualizacoes++;
+        }
+      }
+    }
+    
+    showToast(`${atualizacoes} itens atualizados com sucesso!`);
+    
+    // Limpar o input
+    document.getElementById('atualizacaoFile').value = '';
+    
+  } catch (error) {
+    console.error('Erro ao importar atualizações:', error);
+    showToast('Erro ao processar arquivo de atualização.', 'error');
+  }
+}
+
+// Boot
+updateRoleVisibility();
+if(!JSON.parse(localStorage.getItem('session')||'null')){
+  document.getElementById('login').classList.add('active');
+  document.getElementById('home').classList.remove('active');
+}
+</script>
+</body></html>
+

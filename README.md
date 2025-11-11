@@ -1,8 +1,39 @@
 # 💧 Água Lírios - Fonte de Confiança
 
-## PWA de Gestão de Entregas de Água
+## PWA de Gestão de Entregas de Água - Versão 9.0
 
 Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios para distribuidoras de água mineral.
+
+---
+
+## 🎯 Novidades da Versão 9.0
+
+### ✨ Principais Melhorias
+
+**1. Sistema de Usuários Simplificado**
+- Removido seed automático de vendedor/operacional
+- Admin cadastra usuários manualmente conforme necessário
+- Fluxo de trabalho otimizado para cadastro em dispositivos específicos
+
+**2. Edição de Clientes**
+- Novo botão "Editar" para admin e operacional
+- Carregamento automático dos dados no formulário
+- Processo de edição simplificado
+
+**3. Sistema Inteligente de Exclusão/Desativação**
+- Cliente sem pedidos: pode ser **excluído** permanentemente
+- Cliente com pedidos: pode ser **desativado** (mantém histórico)
+- Clientes inativos podem ser **reativados** a qualquer momento
+
+**4. Indicação Visual de Status**
+- Clientes inativos aparecem com ícone 🚫 e badge "INATIVO"
+- Nome riscado e em cinza para fácil identificação
+- Botões contextuais (Excluir/Desativar/Reativar) conforme situação
+
+**5. Filtro Automático em Pedidos**
+- Apenas clientes ativos aparecem na seleção de pedidos
+- Evita criação de pedidos para clientes desativados
+- Histórico de pedidos antigos permanece intacto
 
 ---
 
@@ -21,6 +52,8 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 
 ### 📊 Funcionalidades Completas
 - Cadastro de clientes (nome, telefone, documento, cidade, endereço)
+- **Edição de clientes** (admin e operacional)
+- **Sistema de desativação** para clientes inativos
 - Gestão de produtos e preços
 - Criação de pedidos com histórico do cliente
 - Romaneio de carregamento
@@ -45,29 +78,17 @@ Sistema completo para gerenciamento de clientes, pedidos, entregas e relatórios
 
 ### Passo 2: Fazer Upload dos Arquivos
 
-**Opção A - Via Interface Web (Mais Fácil):**
+**Via Interface Web (Mais Fácil):**
 
 1. No repositório criado, clique em **"uploading an existing file"**
-2. Arraste TODOS os arquivos desta pasta:
+2. Arraste TODOS os arquivos principais:
    - `index.html`
    - `manifest.json`
    - `sw.js`
    - `agua-lirios-azul.png`
    - `agua-lirios-azul-Copia.png`
-3. Adicione uma mensagem: "Versão inicial do PWA"
+3. Adicione uma mensagem: "Versão 9.0 do PWA"
 4. Clique em **"Commit changes"**
-
-**Opção B - Via Git (Linha de Comando):**
-
-```bash
-# No terminal/prompt, dentro desta pasta:
-git init
-git add .
-git commit -m "Versão inicial do PWA"
-git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/agua-lirios-pwa.git
-git push -u origin main
-```
 
 ### Passo 3: Ativar GitHub Pages
 
@@ -84,15 +105,28 @@ git push -u origin main
 
 ## 🔐 Credenciais de Acesso
 
-### Usuários Padrão
+### Usuário Padrão
 
-| Perfil | Usuário | Senha | Permissões |
-|--------|---------|-------|------------|
-| **Admin** | `adm` | `975321` | Acesso total, backup/restore, configurações |
-| **Vendedor** | `vendedor` | `123456` | Clientes, pedidos, exportação de dados |
-| **Operacional** | `operacional` | `123456` | Romaneio, entregas, impressão de relatórios |
+| Perfil | Usuário | Senha | Descrição |
+|--------|---------|-------|-----------|
+| **Admin** | `adm` | `975321` | Acesso total ao sistema |
 
-> ⚠️ **IMPORTANTE**: Após o primeiro acesso, altere as senhas padrão em **Configurações > Usuários**
+> ⚠️ **IMPORTANTE**: Na v9.0, apenas o admin é criado automaticamente. Vendedores e operacionais devem ser cadastrados manualmente.
+
+### Como Cadastrar Vendedor/Operacional
+
+**Fluxo de Trabalho:**
+
+1. **Admin acessa o dispositivo** do vendedor/operacional
+2. **Faz login** com `adm` / `975321`
+3. **Menu > Configurações > Usuários**
+4. **Preenche o formulário:**
+   - Usuário: nome do usuário (ex: `joao`)
+   - Perfil: `vendedor` ou `operacional`
+   - Senha: senha escolhida (ex: `senha123`)
+5. **Clica em "Adicionar usuário"**
+6. **Faz logout**
+7. **Novo usuário faz login** com suas credenciais
 
 ---
 
@@ -128,7 +162,7 @@ git push -u origin main
 
 ### Para Vendedores
 
-1. **Login** com usuário `vendedor`
+1. **Login** com credenciais fornecidas pelo admin
 2. **Cadastrar Clientes**: Menu Clientes > Preencher formulário
 3. **Criar Pedidos**: 
    - Menu Pedidos
@@ -140,23 +174,55 @@ git push -u origin main
 
 ### Para Operacional
 
-1. **Login** com usuário `operacional`
-2. **Romaneio**: Ver quantidades para carregar o caminhão
-3. **Entregas**: Relatório completo com valores por cliente
-4. **Imprimir**: Usar botões de impressão nos relatórios
-5. **Importar Dados**: Menu Meus Dados > Importar backup do admin
+1. **Login** com credenciais fornecidas pelo admin
+2. **Editar Clientes**: Menu Clientes > Botão "Editar"
+3. **Desativar Clientes**: Menu Clientes > Botão "Desativar" (se tiver pedidos)
+4. **Romaneio**: Ver quantidades para carregar o caminhão
+5. **Entregas**: Relatório completo com valores por cliente
+6. **Imprimir**: Usar botões de impressão nos relatórios
 
 ### Para Administradores
 
-1. **Login** com usuário `adm`
-2. **Configurações**: Gerenciar cidades, produtos, preços, usuários
-3. **Backup Completo**: Menu Configurações > Backup/Restore
-4. **Criar Usuários**: Configurações > Usuários > Adicionar
-5. **Deletar Dados**: Use os botões de exclusão (⊗) em cada item
+1. **Login** com `adm` / `975321`
+2. **Cadastrar Usuários**: Configurações > Usuários > Adicionar
+3. **Editar Clientes**: Menu Clientes > Botão "Editar"
+4. **Gerenciar Status**: 
+   - **Excluir** clientes sem pedidos
+   - **Desativar** clientes com pedidos
+   - **Reativar** clientes inativos
+5. **Configurações**: Gerenciar cidades, produtos, preços
+6. **Backup Completo**: Menu Configurações > Backup/Restore
 
 ---
 
 ## 🛠️ Funcionalidades Detalhadas
+
+### Gestão de Clientes (NOVO na v9.0)
+
+**Edição:**
+- Botão "Editar" ao lado de cada cliente
+- Disponível para admin e operacional
+- Dados carregados automaticamente no formulário
+- Salvar clicando em "Adicionar"
+
+**Exclusão/Desativação Inteligente:**
+
+**Cliente SEM pedidos:**
+- Botão **"Excluir"** (vermelho)
+- Remove permanentemente do banco
+- Confirmação obrigatória
+
+**Cliente COM pedidos:**
+- Botão **"Desativar"** (amarelo)
+- Marca como inativo
+- Mantém histórico de pedidos
+- Não aparece mais na seleção de novos pedidos
+
+**Cliente INATIVO:**
+- Aparece com 🚫 e badge "INATIVO"
+- Nome riscado e em cinza
+- Botão **"Reativar"** (verde)
+- Pode ser reativado a qualquer momento
 
 ### Cadastro de Clientes
 - Nome completo
@@ -167,7 +233,7 @@ git push -u origin main
 
 ### Gestão de Pedidos
 - Filtro por cidade
-- Seleção de cliente
+- Seleção de cliente (apenas ativos)
 - **Histórico automático** dos últimos 5 pedidos do cliente
 - Adição de múltiplos produtos
 - Cálculo automático de totais
@@ -226,14 +292,6 @@ Após fazer alterações no código:
 3. No app instalado, feche completamente e reabra
 4. O Service Worker baixará a nova versão automaticamente
 
-### Verificar Instalabilidade
-
-Use o [PWA Builder](https://www.pwabuilder.com/) para validar:
-1. Acesse https://www.pwabuilder.com/
-2. Cole a URL do seu PWA
-3. Clique em "Start"
-4. Veja o relatório de compatibilidade
-
 ---
 
 ## 📋 Requisitos Técnicos
@@ -259,15 +317,21 @@ Use o [PWA Builder](https://www.pwabuilder.com/) para validar:
 
 ---
 
-## 🐛 Bugs Corrigidos na Versão Atual
+## 📝 Changelog
 
-### v8.0 - Correção de Bugs Críticos (10/11/2025)
+### v9.0 - Ajustes Finais (11/11/2025)
 
-✅ **Bug de Deleção**: Corrigida função `dbDel()` - itens agora são removidos corretamente do IndexedDB
+✅ **Removido** seed automático de vendedor/operacional  
+✅ **Adicionado** botão de editar clientes (admin/operacional)  
+✅ **Implementado** sistema inteligente de exclusão/desativação  
+✅ **Adicionada** indicação visual de clientes inativos  
+✅ **Implementado** filtro de clientes ativos em pedidos  
 
-✅ **Bug de Login**: Adicionados usuários de teste `vendedor` e `operacional` no seed automático
+### v8.0 - Bugs Críticos Corrigidos (10/11/2025)
 
-✅ **Bug de Histórico**: Implementada chamada automática de `mostrarHistoricoPedidos()` ao entrar na tela de pedidos e após salvar
+✅ Corrigida função de deleção no IndexedDB  
+✅ Adicionados usuários de teste vendedor/operacional  
+✅ Implementado histórico de pedidos do cliente  
 
 ---
 
@@ -293,16 +357,16 @@ Sistema desenvolvido com dedicação para otimizar a gestão de entregas e melho
 **Desenvolvido por:** Manus AI Agent  
 **Cliente:** Gaudêncio  
 **Data:** Novembro 2025  
-**Versão:** 8.0 (Bugs Críticos Corrigidos)
+**Versão:** 9.0 - Ajustes Finais
 
 ---
 
 ## 📚 Documentação Adicional
 
-Para informações técnicas detalhadas sobre as correções aplicadas, consulte:
-- `TESTES_BUGS_CORRIGIDOS.md` - Relatório técnico das correções
+Para informações técnicas detalhadas sobre as alterações da v9.0, consulte:
+- `ALTERACOES_V9.md` - Relatório completo das mudanças
 
 ---
 
-**🚀 Pronto para usar! Boa sorte com suas entregas! 💧**
+**🚀 Versão 9.0 - Pronta para uso! Boa sorte com suas entregas! 💧**
 

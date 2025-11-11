@@ -364,15 +364,10 @@ async function dbDel(s,k){
 async function dbAll(s){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error);});}
 async function dbGet(s,k){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const rq=tx.objectStore(s).get(k);rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>rej(rq.error);});}
 
-// Seed admin e usuários de teste
+// Seed admin
 (async()=>{
   const admin=await dbGet(S_USERS,'adm');
   if(!admin){ await dbPut(S_USERS,{user:'adm',pass:btoa('975321'),role:'admin'}); }
-  // Criar usuários de teste se não existirem
-  const vendedor=await dbGet(S_USERS,'vendedor');
-  if(!vendedor){ await dbPut(S_USERS,{user:'vendedor',pass:btoa('123456'),role:'vendedor'}); }
-  const operacional=await dbGet(S_USERS,'operacional');
-  if(!operacional){ await dbPut(S_USERS,{user:'operacional',pass:btoa('123456'),role:'operacional'}); }
   const session=JSON.parse(localStorage.getItem('session')||'null');
   if(!session){ showLogin(); } else { updateRoleVisibility(); }
 })();
@@ -618,12 +613,46 @@ async function addCliente(){
   showToast('Cliente adicionado com sucesso!');
   renderClientes();
 }
-async function delCliente(id){
-  confirmar('Tem certeza que deseja remover este cliente?', async function() {
+async function editarCliente(id){
+  const cliente=await dbGet(S_CLIENTES,id);
+  if(!cliente){showToast('Cliente não encontrado.','error');return;}
+  document.getElementById('cliNome').value=cliente.nome||'';
+  document.getElementById('cliTelefone').value=cliente.telefone||'';
+  document.getElementById('cliDocumento').value=cliente.documento||'';
+  document.getElementById('cliCidade').value=cliente.cidadeId||'';
+  document.getElementById('cliEndereco').value=cliente.endereco||'';
+  // Remover cliente antigo e permitir salvar como novo
+  await dbDel(S_CLIENTES,id);
+  showToast('Cliente carregado para edição. Faça as alterações e clique em Adicionar.');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function excluirCliente(id){
+  confirmar('Tem certeza que deseja EXCLUIR permanentemente este cliente?', async function() {
     await dbDel(S_CLIENTES, id);
-    showToast('Cliente removido com sucesso!');
+    showToast('Cliente excluído com sucesso!');
     renderClientes();
   });
+}
+
+async function desativarCliente(id){
+  confirmar('Desativar este cliente? Ele não aparecerá mais na seleção de pedidos.', async function() {
+    const cliente=await dbGet(S_CLIENTES,id);
+    if(!cliente){showToast('Cliente não encontrado.','error');return;}
+    cliente.ativo=false;
+    await dbPut(S_CLIENTES,cliente);
+    showToast('Cliente desativado com sucesso!');
+    renderClientes();
+  });
+}
+
+async function reativarCliente(id){
+  const cliente=await dbGet(S_CLIENTES,id);
+  if(!cliente){showToast('Cliente não encontrado.','error');return;}
+  cliente.ativo=true;
+  await dbPut(S_CLIENTES,cliente);
+  showToast('Cliente reativado com sucesso!');
+  renderClientes();
 }
 
 // Importação CSV
@@ -726,16 +755,38 @@ async function exportarClientesCSV() {
 async function renderClientes(){
   const clientes=await dbAll(S_CLIENTES);
   const cidades=await dbAll(S_CIDADES);
+  const pedidos=await dbAll(S_PEDIDOS);
   const cidadeMap=Object.fromEntries(cidades.map(c=>[c.id,c.nome]));
   const filtro=document.getElementById('filtroCidade').value.toLowerCase();
   const filtrados=clientes.filter(c=>!filtro||cidadeMap[c.cidadeId]?.toLowerCase().includes(filtro));
+  const r=role();
+  const podeEditar=r==='admin'||r==='operacional';
   const lista=document.getElementById('listaClientes');
-  lista.innerHTML=filtrados.map(c=>`
-    <div class="row">
-      <div><b>${c.nome}</b><div class="hint">${c.telefone} • ${cidadeMap[c.cidadeId]||'—'}</div><div class="hint">${c.endereco||''}</div></div>
-      <button class="btn small danger" onclick="delCliente(${c.id})">Remover</button>
-    </div>
-  `).join('') || '<div class="row"><span>Nenhum cliente encontrado.</span></div>';
+  lista.innerHTML=filtrados.map(c=>{
+    const temPedidos=pedidos.some(p=>p.clienteId===c.id);
+    const inativo=c.ativo===false;
+    const statusText=inativo?' 🚫 <span class="badge">INATIVO</span>':'';
+    const nomeStyle=inativo?'style="color:#94a3b8;text-decoration:line-through"':'';
+    let botoes='';
+    if(podeEditar){
+      botoes+=`<button class="btn small ghost" onclick="editarCliente(${c.id})">Editar</button>`;
+      if(temPedidos){
+        if(inativo){
+          botoes+=`<button class="btn small success" onclick="reativarCliente(${c.id})">Reativar</button>`;
+        }else{
+          botoes+=`<button class="btn small warn" onclick="desativarCliente(${c.id})">Desativar</button>`;
+        }
+      }else{
+        botoes+=`<button class="btn small danger" onclick="excluirCliente(${c.id})">Excluir</button>`;
+      }
+    }
+    return `
+      <div class="row">
+        <div><b ${nomeStyle}>${c.nome}${statusText}</b><div class="hint">${c.telefone} • ${cidadeMap[c.cidadeId]||'—'}</div><div class="hint">${c.endereco||''}</div></div>
+        <div style="display:flex;gap:6px">${botoes}</div>
+      </div>
+    `;
+  }).join('') || '<div class="row"><span>Nenhum cliente encontrado.</span></div>';
 }
 
 async function refreshCidadesSelect(selectId){
@@ -787,7 +838,9 @@ async function refreshCidadePedidos(){
 async function refreshClientesSelect(){
   const cidSel=parseInt(document.getElementById('selCidadePedidos').value||'0',10);
   const clientes=await dbAll(S_CLIENTES);
-  const filtrados=cidSel?clientes.filter(c=>c.cidadeId===cidSel):clientes;
+  // Filtrar apenas clientes ativos (ativo !== false)
+  const ativos=clientes.filter(c=>c.ativo!==false);
+  const filtrados=cidSel?ativos.filter(c=>c.cidadeId===cidSel):ativos;
   const sel=document.getElementById('selCliente');
   sel.innerHTML='<option value="">Selecione um cliente</option>'+filtrados.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
 }

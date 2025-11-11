@@ -217,8 +217,8 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
       <!-- Instalação do App (apenas admin) -->
       <div class="card" data-roles="admin">
         <h3>📱 Instalação do App</h3>
-        <div id="installSection">
-          <button class="btn" id="btnInstallConfig" onclick="instalarApp()">📥 Instalar App no Dispositivo</button>
+        <div>
+          <button class="btn" onclick="mostrarInstrucoesInstalacao()">📥 Como Instalar o App</button>
           <div class="hint">Instale o app para acesso rápido sem precisar abrir o navegador.</div>
         </div>
       </div>
@@ -234,9 +234,8 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
 
       <div class="card" data-roles="admin">
         <h3>Produtos & Preços</h3>
-        <div class="two">
-          <input id="prodSKU" placeholder="SKU (ex.: PET500)">
-          <input id="prodNome" placeholder="Nome (ex.: Garrafa 500 mL)">
+        <div class="sec">
+          <input id="prodNome" placeholder="Nome do produto (ex.: Agua Lirios 20 Litros)" style="width:100%">
         </div>
         <div class="cta sec">
           <button class="btn" onclick="addProduto()">Adicionar produto</button>
@@ -311,49 +310,49 @@ input,select{padding:10px;border-radius:10px;border:1px solid #cbd5e1;width:100%
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));}
 
-// PWA Installation
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btnHeader = document.getElementById('btnInstall');
-  if(btnHeader) btnHeader.hidden = false;
-  updateInstallButton();
-});
-
-function updateInstallButton(){
-  const btnConfig = document.getElementById('btnInstallConfig');
-  const installSection = document.getElementById('installSection');
-  if(!btnConfig || !installSection) return;
-  
-  if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true){
-    // App já instalado
-    installSection.innerHTML = '<div class="hint" style="color:#059669;font-weight:600">✅ App já instalado neste dispositivo</div>';
-  } else if(deferredPrompt){
-    // Pode instalar
-    btnConfig.style.display = 'inline-block';
-  } else {
-    // Não pode instalar (navegador não suporta ou já instalado)
-    installSection.innerHTML = '<div class="hint" style="color:#64748b">Instalação não disponível neste navegador. Tente usar Chrome, Edge ou Safari.</div>';
-  }
+// PWA Installation - Modal com instruções
+function mostrarInstrucoesInstalacao(){
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:600px">
+      <h2 style="margin-top:0">📱 Como Instalar o App</h2>
+      
+      <div style="text-align:left;margin:20px 0">
+        <h3 style="color:#1e3a8a;margin-top:20px">🤖 Android (Chrome/Edge)</h3>
+        <ol style="margin:10px 0;padding-left:20px">
+          <li>Toque no menu <b>(⋮)</b> no canto superior direito</li>
+          <li>Selecione <b>"Instalar aplicativo"</b> ou <b>"Adicionar à tela inicial"</b></li>
+          <li>Confirme a instalação</li>
+          <li>O ícone aparecerá na tela inicial</li>
+        </ol>
+        
+        <h3 style="color:#1e3a8a;margin-top:20px"> iOS (Safari)</h3>
+        <ol style="margin:10px 0;padding-left:20px">
+          <li>Toque no botão <b>Compartilhar (□↑)</b></li>
+          <li>Role e toque em <b>"Adicionar à Tela de Início"</b></li>
+          <li>Confirme o nome e toque em <b>"Adicionar"</b></li>
+          <li>O ícone aparecerá na tela inicial</li>
+        </ol>
+        
+        <h3 style="color:#1e3a8a;margin-top:20px">💻 Desktop (Chrome/Edge)</h3>
+        <ol style="margin:10px 0;padding-left:20px">
+          <li>Clique no ícone <b>(⊕)</b> na barra de endereço</li>
+          <li>Ou vá em Menu > <b>"Instalar Água Lírios..."</b></li>
+          <li>Confirme a instalação</li>
+          <li>O app abrirá em janela própria</li>
+        </ol>
+        
+        <div style="background:#f0f9ff;padding:15px;border-radius:8px;margin-top:20px">
+          <p style="margin:0;color:#0369a1"><b>💡 Dica:</b> Após instalar, o app funciona offline e abre mais rápido!</p>
+        </div>
+      </div>
+      
+      <button class="btn" onclick="this.closest('.modal').remove()">Fechar</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
-
-async function instalarApp(){
-  if(!deferredPrompt){
-    showToast('Instalação não disponível. Use Chrome, Edge ou Safari.','warn');
-    return;
-  }
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if(outcome === 'accepted'){
-    showToast('App instalado com sucesso!','success');
-  }
-  deferredPrompt = null;
-  updateInstallButton();
-}
-
-// Botão de instalação no header
-document.getElementById('btnInstall')?.addEventListener('click', instalarApp);
 
 // Toast notifications
 function showToast(message, type = 'success') {
@@ -406,7 +405,7 @@ function go(id){
   if(id==='romaneio'){ requireRole(['admin','operacional']); setDefaultDate('dataRomaneio'); calcRomaneio(); }
   if(id==='entregas'){ requireRole(['admin','operacional']); setDefaultDate('dataEntregas'); calcEntregas(); }
   if(id==='meusdados'){ requireRole(['vendedor','operacional']); }
-  if(id==='config'){ requireRole(['admin','operacional']); renderConfig(); renderUsuarios(); updateInstallButton(); }
+  if(id==='config'){ requireRole(['admin','operacional']); renderConfig(); renderUsuarios(); }
   if(id==='home'){ updateRoleVisibility(); }
 }
 
@@ -606,14 +605,35 @@ async function delCidade(id){
 }
 
 // Produtos & Preços
+// Função para gerar SKU automaticamente a partir do nome
+function gerarSKU(nome){
+  // Remove acentos, espaços, caracteres especiais e converte para minúsculas
+  return nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-') // Substitui espaços e caracteres especiais por hífen
+    .replace(/^-+|-+$/g, ''); // Remove hífens no início e fim
+}
+
 async function addProduto(){
-  const sku=document.getElementById('prodSKU').value.trim();
   const nome=document.getElementById('prodNome').value.trim();
-  if(!sku || !nome){ showToast('Informe SKU e Nome.', 'warn'); return; }
-  const exists = await dbGet(S_PROD, sku);
-  if(exists){ showToast('SKU já existe.', 'warn'); return; }
+  if(!nome){ showToast('Informe o nome do produto.', 'warn'); return; }
+  
+  // Gerar SKU automaticamente
+  let sku = gerarSKU(nome);
+  
+  // Verificar se SKU já existe e adicionar número se necessário
+  let exists = await dbGet(S_PROD, sku);
+  let counter = 1;
+  while(exists){
+    sku = gerarSKU(nome) + '-' + counter;
+    exists = await dbGet(S_PROD, sku);
+    counter++;
+  }
+  
   await dbPut(S_PROD,{sku,nome,precos:[]});
-  document.getElementById('prodSKU').value=''; document.getElementById('prodNome').value='';
+  document.getElementById('prodNome').value='';
   showToast('Produto adicionado com sucesso!');
   renderConfig(); refreshProdutosUI();
 }
@@ -1140,15 +1160,15 @@ async function renderConfig(){
   const produtos=await dbAll(S_PROD);
   document.getElementById('listaProdutos').innerHTML=produtos.map(p=>`
     <div class="row">
-      <div><b>${p.nome}</b> <span class="badge">${p.sku}</span>
+      <div><b>${p.nome}</b>
         ${(p.precos||[]).map((pr,i)=>`<div class="hint">${pr.rotulo}: R$ ${pr.valor.toFixed(2)} <span class="link" onclick="delPreco('${p.sku}',${i})">remover</span></div>`).join('')}
       </div>
       <button class="btn small danger" onclick="delProduto('${p.sku}')">Remover</button>
     </div>
   `).join('') || '<div class="row"><span>Nenhum produto cadastrado.</span></div>';
   
-  // Produtos select
-  document.getElementById('precoSKU').innerHTML='<option value="">Selecione um produto</option>'+produtos.map(p=>`<option value="${p.sku}">${p.nome} (${p.sku})</option>`).join('');
+  // Produtos select (mostra apenas nome, SKU fica nos bastidores)
+  document.getElementById('precoSKU').innerHTML='<option value="">Selecione um produto</option>'+produtos.map(p=>`<option value="${p.sku}">${p.nome}</option>`).join('');
 }
 
 async function renderUsuarios(){
